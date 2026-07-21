@@ -1,0 +1,82 @@
+<svg width="820" height="820" viewBox="0 0 820 820" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#EFF3EC"/>
+      <stop offset="100%" stop-color="#E4EAE3"/>
+    </radialGradient>
+    <linearGradient id="canopyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9FB6A4"/>
+      <stop offset="100%" stop-color="#6E8B72"/>
+    </linearGradient>
+    <linearGradient id="trunkGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4A5D3F"/>
+      <stop offset="100%" stop-color="#38472F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- soft field background -->
+  <circle cx="410" cy="410" r="390" fill="url(#bgGlow)"/>
+
+  <!-- concentric vitality rings, broken at the 100% mark -->
+  <g fill="none" stroke="#7FA8A3" stroke-linecap="round">
+    <circle cx="410" cy="410" r="330" stroke-width="1.5" stroke-dasharray="2 10" opacity="0.55"/>
+    <circle cx="410" cy="410" r="285" stroke-width="2" opacity="0.35"/>
+  </g>
+
+  <!-- the 100% progress ring, drawn as a full closed circle to read as "whole" -->
+  <circle cx="410" cy="410" r="255" fill="none" stroke="#4A5D3F" stroke-width="4" opacity="0.9"/>
+  <circle cx="410" cy="410" r="255" fill="none" stroke="#C9AA6B" stroke-width="4"
+          stroke-dasharray="1602" stroke-dashoffset="0" transform="rotate(-90 410 410)"/>
+
+  <!-- small marker at the top of the ring, the "start / 100" point -->
+  <circle cx="410" cy="155" r="7" fill="#38472F"/>
+  <circle cx="410" cy="155" r="7" fill="none" stroke="#F5F3EE" stroke-width="2"/>
+
+  <!-- ground line -->
+  <line x1="180" y1="640" x2="640" y2="640" stroke="#6E8B72" stroke-width="1" opacity="0.4"/>
+
+  <!-- trunk, growing from the base of the ring -->
+  <path d="M 396 640 C 392 560 400 500 405 460 C 408 440 412 430 410 405
+           C 408 430 412 440 415 460 C 420 500 428 560 424 640 Z"
+        fill="url(#trunkGrad)"/>
+
+  <!-- root flare -->
+  <path d="M 396 640 C 380 636 362 634 348 640" stroke="#38472F" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M 424 640 C 440 636 458 634 472 640" stroke="#38472F" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M 410 640 L 410 655" stroke="#38472F" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- canopy: layered organic leaf clusters, kept inside the ring -->
+  <g fill="url(#canopyGrad)">
+    <ellipse cx="410" cy="330" rx="150" ry="130"/>
+    <ellipse cx="315" cy="380" rx="95" ry="85" opacity="0.92"/>
+    <ellipse cx="505" cy="380" rx="95" ry="85" opacity="0.92"/>
+    <ellipse cx="410" cy="255" rx="105" ry="95" opacity="0.96"/>
+  </g>
+
+  <!-- lighter highlight leaves for depth -->
+  <g fill="#B7CBB9" opacity="0.55">
+    <ellipse cx="365" cy="290" rx="55" ry="42"/>
+    <ellipse cx="460" cy="310" rx="48" ry="38"/>
+    <ellipse cx="410" cy="360" rx="60" ry="46"/>
+  </g>
+
+  <!-- a few individual leaf strokes for craft, drawn in the darker tone -->
+  <g stroke="#4A5D3F" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.55">
+    <path d="M 350 300 C 356 292 366 292 372 300 C 366 306 356 306 350 300 Z"/>
+    <path d="M 470 320 C 476 312 486 312 492 320 C 486 326 476 326 470 320 Z"/>
+    <path d="M 400 250 C 406 242 416 242 422 250 C 416 256 406 256 400 250 Z"/>
+    <path d="M 320 360 C 326 352 336 352 342 360 C 336 366 326 366 320 360 Z"/>
+    <path d="M 495 365 C 501 357 511 357 517 365 C 511 371 501 371 495 365 Z"/>
+  </g>
+
+  <!-- softly falling / floating leaves, suggesting steady daily growth -->
+  <g fill="#C9AA6B" opacity="0.85">
+    <ellipse cx="560" cy="470" rx="10" ry="6" transform="rotate(28 560 470)"/>
+    <ellipse cx="590" cy="530" rx="8" ry="5" transform="rotate(-15 590 530)"/>
+    <ellipse cx="255" cy="500" rx="9" ry="5.5" transform="rotate(-32 255 500)"/>
+  </g>
+
+  <!-- caption lockup -->
+  <text x="410" y="760" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="22" fill="#38472F">Every day, fully rooted.</text>
+</svg>
