@@ -5,10 +5,10 @@ window.addEventListener("scroll", () => {
     const benefitBoxes = document.getElementById("benefits-section");
     const timelineSection = document.getElementById("timeline")
 
-    if (window.scrollY > 300) {
+    if (window.scrollY > 350) {
         console.log("scroll-activated")
         benefitBoxes.classList.add("scroll-activated")
-    if (window.scrollY > 850) {
+    if (window.scrollY > 900) {
         timelineSection.classList.add("scroll-activated")
     }
    

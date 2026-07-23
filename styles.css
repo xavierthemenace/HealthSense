@@ -145,6 +145,7 @@ nav a:hover {
 #benefits-section {
     margin: 100px auto 140px;
     padding: 0 24px;
+    opacity: 0;
 }
 .scroll-activated {
     animation-name: slideUpAnimation;
@@ -153,6 +154,7 @@ nav a:hover {
     animation-iteration-count: 1;
     animation-direction: normal;
     animation-fill-mode: both;
+    opacity: 100%;
 }
 .benefits-boxes {
     display: flex;
@@ -292,6 +294,7 @@ nav a:hover {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  opacity: 0;
 }
 .timeline::before {
   content: '';
@@ -500,4 +503,61 @@ nav a:hover {
     padding: 40px 24px;
   }
 }
-.main-vision
+.main-vision {
+    position: relative;
+    top: 175px;
+    left: 35%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 28px;
+    text-align: center;
+    box-shadow: 0 18px 45px rgba(31, 46, 43, 0.12);
+    padding: 48px 32px;
+    width: 560px;
+    background: rgba(255, 255, 255, 0.78);
+    font-family: var(--font-serif);
+    transition: transform 0.35s ease,
+                box-shadow 0.35s ease;
+}
+
+.main-vision:hover {
+    transform: translateY(-8px) ;
+    box-shadow: 0 20px 48px rgba(31, 46, 43, 0.14);
+}
+
+.vision-intro {
+    position: relative;
+    top: 245px;
+    font-family: var(--font-display);
+    display: flex;
+    align-items: center;
+}
+#vision-copy {
+    margin: 50px 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 28px;
+    width: 450px;
+    height: 350px;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 18px 45px rgba(31, 46, 43, 0.12);
+    text-align: center;
+    box-shadow: 0 18px 45px rgba(31, 46, 43, 0.12);
+    padding: 48px 32px;
+    transition: transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+#vision-copy:hover {
+    transform: translateY(-8px) ;
+    box-shadow: 0 20px 48px rgba(31, 46, 43, 0.14);
+}
+.vision-about-placeholder {
+    font-size: 36px;
+    border-radius: 28px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 18px 45px rgba(31, 46, 43, 0.12);
+
+}
