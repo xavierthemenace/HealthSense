@@ -6,6 +6,33 @@ const workoutForm = document.getElementById("workout-form");
 const workoutOutput = document.getElementById("workout-output");
 const mealPreviewButton = document.getElementById("meal-preview");
 const mealOutput = document.getElementById("meal-output");
+const viewTriggers = document.querySelectorAll('[data-view]');
+const viewPanels = document.querySelectorAll('.view-panel');
+
+function showView(viewName) {
+    viewPanels.forEach((panel) => {
+        const isActive = panel.id === `view-${viewName}`;
+        panel.classList.toggle("hidden", !isActive);
+        panel.setAttribute("aria-hidden", isActive ? "false" : "true");
+    });
+}
+
+viewTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", (event) => {
+        event.preventDefault();
+        const view = trigger.getAttribute("data-view") || "dashboard";
+        showView(view);
+    });
+});
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        const activePanel = document.querySelector('.view-panel:not(.hidden)');
+        if (activePanel && activePanel.id !== "view-dashboard") {
+            showView("dashboard");
+        }
+    }
+});
 
 function activateSections() {
     if (!benefitBoxes || !timelineSection) return;

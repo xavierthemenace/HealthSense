@@ -32,19 +32,19 @@
         </ul>
     </div>
 
-    <div class="dashboard-layout full-width-dashboard">
+    <div class="dashboard-layout full-width-dashboard" id="dashboard-shell">
         <aside class="siderbar">
             <ul class="sidemenu">
                 <li class="sidebar-title">HealthSense</li>
                 <li><a href=""><i class='bx bx-home'></i> Home</a></li>
-                <li><a href=""><i class='bx bx-dumbbell'></i> Workouts</a></li>
+                <li><a href="#" data-view="workout" aria-controls="workout-view" aria-haspopup="dialog"><i class='bx bx-dumbbell'></i> Workouts</a></li>
                 <li><a href=""><i class='bx bx-bowl-rice'></i> Meals</a></li>
                 <li><a href=""><i class='bx bx-shopping-bag'></i> Grocery</a></li>
                 <li><a href=""><i class='bx bx-camera'></i> Scanner</a></li>
             </ul>
         </aside>
 
-        <main class="dashboard-main">
+        <main class="dashboard-main" id="dashboard-main">
             <header class="dashboard-header">
                 <div>
 
@@ -146,10 +146,33 @@
                         <li>Protein: 28g</li>
                         <li>Carbs: 47g</li>
                     </ul>
-                </article>
+                </article >
             </section>
         </main>
     </div>
+
+    <section class="workout-page hidden" id="workout-view" aria-labelledby="workout-page-title">
+        <div class="workout-page__header">
+            <p class="modal-eyebrow">Workout hub</p>
+            <h2 id="workout-page-title">Your next workout</h2>
+            <p class="modal-copy">This is the soon-to-be workout experience. It replaces the dashboard content in place.</p>
+        </div>
+        <div class="workout-page__grid">
+            <article class="workout-card">
+                <h3>Strength focus</h3>
+                <p>Build full-body strength with guided sets and rest pacing.</p>
+            </article>
+            <article class="workout-card">
+                <h3>Cardio flow</h3>
+                <p>Combine brisk intervals with mobility to keep your routine balanced.</p>
+            </article>
+            <article class="workout-card">
+                <h3>Recovery</h3>
+                <p>Wind down with stretches and breathing for better recovery.</p>
+            </article>
+        </div>
+        <button class="ghost-button" type="button" data-view="dashboard">Back to dashboard</button>
+    </section>
     <div class="workout">
 
     </div>
