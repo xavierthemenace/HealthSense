@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HealthSense</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Basic Icons -->
+<link href="https://cdn.boxicons.com/3.0.8/fonts/basic/boxicons.min.css" rel="stylesheet">
+<!-- Filled Icons -->
+<link href="https://cdn.boxicons.com/3.0.8/fonts/filled/boxicons-filled.min.css" rel="stylesheet">
+<!-- Brand Icons -->
+<link href="https://cdn.boxicons.com/3.0.8/fonts/brands/boxicons-brands.min.css" rel="stylesheet">
 </head>
 <body>
     <nav>
@@ -15,15 +21,147 @@
             <li><a href="vision.html">Vision</a></li>
         </ul>
     </nav>
-    <aside class="sidebar">
-        <header class="sidebar-header">
-            <a href="#" class="header-logo">
-                <img src="healthsense-hero-illustration.svg" alt="HealthSense" style="height: 120px; width: 120px;"> 
-            </a>
-            <button class="toggler">
-                <span class="material-symbols-rounded">chevron_left</span>
-            </button>
-        </header>
-    </aside>
+    <div class="mobile-menu">
+        <h3>HealthSense<i class="bx bx-menu" id="mbmenu"></i></h3>
+        <ul class="sidemenu hidden">
+            <li><a href="">Home</a></li>
+            <li><a href="">Exercise</a></li>
+            <li><a href="">Diet</a></li>
+            <li><a href="">Progress</a></li>
+            <li><a href="">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="dashboard-layout full-width-dashboard">
+        <aside class="siderbar">
+            <ul class="sidemenu">
+                <li class="sidebar-title">HealthSense</li>
+                <li><a href=""><i class='bx bx-home'></i> Home</a></li>
+                <li><a href=""><i class='bx bx-dumbbell'></i> Workouts</a></li>
+                <li><a href=""><i class='bx bx-bowl-rice'></i> Meals</a></li>
+                <li><a href=""><i class='bx bx-shopping-bag'></i> Grocery</a></li>
+                <li><a href=""><i class='bx bx-camera'></i> Scanner</a></li>
+            </ul>
+        </aside>
+
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <div>
+
+                    <h1>Good Morning, Xavier</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="ghost-button">Refresh</button>
+                </div>
+            </header>
+
+            <section class="stats-row">
+                <article class="stat-card">
+                    <span class="stat-label">Weekly grocery progress</span>
+                    <strong>72%</strong>
+                    <p>4 of 5 nutrition targets met</p>
+                </article>
+                <article class="stat-card">
+                    <span class="stat-label">Meal planner usage</span>
+                    <strong>3 plans</strong>
+                    <p>Planned meals this week</p>
+                </article>
+                <article class="stat-card">
+                    <span class="stat-label">Workouts logged</span>
+                    <strong>5</strong>
+                    <p>Sessions completed this week</p>
+                </article>
+                <article class="stat-card">
+                    <span class="stat-label">Scanner confidence</span>
+                    <strong>81%</strong>
+                    <p>Estimated nutrient accuracy</p>
+                </article>
+            </section>
+
+            <section class="wide-panel-row">
+                <article class="panel wide-panel">
+                    <div class="panel-head">
+                        <h2>Nutrient goals this week</h2>
+                        <span>Tracked by grocery list creator</span>
+                    </div>
+                    <div class="nutrient-chart" aria-label="Nutrient goals progress chart">
+                        <div class="nutrient-row">
+                            <div class="nutrient-meta">
+                                <span class="nutrient-name">Calories</span>
+                                <span class="nutrient-value">86%</span>
+                            </div>
+                            <div class="bar-track"><div class="bar-fill calories"></div></div>
+                        </div>
+                        <div class="nutrient-row">
+                            <div class="nutrient-meta">
+                                <span class="nutrient-name">Protein</span>
+                                <span class="nutrient-value">91%</span>
+                            </div>
+                            <div class="bar-track"><div class="bar-fill protein"></div></div>
+                        </div>
+                        <div class="nutrient-row">
+                            <div class="nutrient-meta">
+                                <span class="nutrient-name">Carbs</span>
+                                <span class="nutrient-value">74%</span>
+                            </div>
+                            <div class="bar-track"><div class="bar-fill carbs"></div></div>
+                        </div>
+                        <div class="nutrient-row">
+                            <div class="nutrient-meta">
+                                <span class="nutrient-name">Fat</span>
+                                <span class="nutrient-value">68%</span>
+                            </div>
+                            <div class="bar-track"><div class="bar-fill fat"></div></div>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <section class="dashboard-grid wide-grid">
+                <article class="panel small-panel">
+                    <h2>Meal planner overview</h2>
+                    <p>Designed for weight loss and recovery with balanced meals.</p>
+                    <ul class="metric-list">
+                        <li>Breakfast: High protein</li>
+                        <li>Lunch: Low carb</li>
+                        <li>Dinner: Veg-heavy</li>
+                    </ul>
+                </article>
+
+                <article class="panel small-panel">
+                    <h2>Workout summary</h2>
+                    <p>Today's focus: cardio + flexibility.</p>
+                    <ul class="metric-list">
+                        <li>3 mobility drills</li>
+                        <li>2 strength sets</li>
+                        <li>20 min cardio</li>
+                    </ul>
+                </article>
+
+                <article class="panel small-panel">
+                    <h2>Scanner snapshot</h2>
+                    <p>Photo-based estimations may vary.</p>
+                    <ul class="metric-list">
+                        <li>Average calories: 420</li>
+                        <li>Protein: 28g</li>
+                        <li>Carbs: 47g</li>
+                    </ul>
+                </article>
+            </section>
+        </main>
+    </div>
+    <div class="workout">
+
+    </div>
+    <div class="meals">
+
+    </div>
+    <div class="grocery">
+
+    </div>
+    <div class="scanner">
+
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
