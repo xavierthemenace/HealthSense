@@ -1417,3 +1417,74 @@ nav a:hover {
 .sidebar {
   display: none;
 }
+.workout-interactive-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.wide-panel-span-2 {
+  grid-column: span 1;
+}
+
+.ghost-button {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ghost-button:hover {
+  background-color: #e8f0ec;
+  border-color: var(--accent-sage);
+}
+
+@media (max-width: 900px) {
+  .workout-interactive-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Modal Overlays and Dialogs */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-overlay.hidden {
+  display: none !important;
+}
+
+.modal-card {
+  background: #ffffff;
+  padding: 28px;
+  border-radius: 16px;
+  max-width: 440px;
+  width: 90%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-card h2 {
+  margin-top: 0;
+  font-size: 1.4rem;
+  color: var(--text-primary, #1a1a1a);
+}
+
+.modal-card p {
+  color: var(--text-secondary, #666);
+  font-size: 0.95rem;
+}
