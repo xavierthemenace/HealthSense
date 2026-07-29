@@ -10,7 +10,7 @@
     <link href="https://cdn.boxicons.com/3.0.8/fonts/brands/boxicons-brands.min.css" rel="stylesheet">
 </head>
 <body>
-    <nav>
+    <nav class="site-nav">
         <h2>HealthSense</h2>
         <ul>
             <li><a href="index.html">Home</a></li>
@@ -20,8 +20,8 @@
     </nav>
     
     <div class="mobile-menu">
-        <h3>HealthSense<i class="bx bx-menu" id="mbmenu"></i></h3>
-        <ul class="sidemenu hidden">
+        <h3>HealthSense<i class="bx bx-menu" id="mbmenu" style="cursor:pointer;"></i></h3>
+        <ul class="sidemenu hidden" id="mobile-sidemenu">
             <li><a href="index.html">Home</a></li>
             <li><a href="#" data-view="dashboard">Dashboard</a></li>
             <li><a href="#" data-view="workout">Workouts</a></li>
@@ -51,7 +51,7 @@
                         <h1>Good Morning, Xavier</h1>
                     </div>
                     <div class="header-actions">
-                        <button class="ghost-button">Refresh</button>
+                        <button class="ghost-button" onclick="window.location.reload();">Refresh</button>
                     </div>
                 </header>
 
@@ -218,7 +218,6 @@
                     <article class="panel wide-panel-span-2">
                         <div class="panel-head">
                             <h2>Generated Routine</h2>
-                            <span id="workout-target-label">Custom Routine</span>
                         </div>
                         <div id="workout-output" class="feature-output" aria-live="polite"></div>
                     </article>
@@ -234,277 +233,6 @@
                     </article>
                 </section>
             </main>
-
-<div class="modal-overlay hidden" id="survey-modal">
-    <div class="modal-card">
-        <h2>Welcome to Your Workout Setup</h2>
-        <p>Please complete this brief survey so we can cater your dashboard and goals to you.</p>
-        
-        <form id="survey-form" style="margin-top: 16px;">
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Primary Fitness Goal:</strong>
-                <select id="survey-primary-goal" required style="width:100%; padding: 8px; margin-top: 4px;">
-                    <option value="Weight Loss">Weight Loss</option>
-                    <option value="Muscle Gain">Muscle Gain / Hypertrophy</option>
-                    <option value="Endurance">Cardio & Endurance</option>
-                    <option value="Flexibility">Flexibility & Mobility</option>
-                </select>
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Weekly Workout Target (Minutes):</strong>
-                <input type="number" id="survey-time-target" value="150" min="30" step="15" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 16px;">
-                <strong>Weekly Calorie Goal (kcal):</strong>
-                <input type="number" id="survey-calorie-target" value="2000" min="500" step="100" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <button type="submit" class="cta-button" style="width: 100%;">Save Preferences & Open Dashboard</button>
-        </form>
-    </div>
-</div>
-
-<div class="modal-overlay hidden" id="log-modal">
-    <div class="modal-card">
-        <h2 id="log-workout-btn">Log Completed Workout</h2>
-        <p>Enter the workout duration to update your total time and calories burned.</p>
-        
-        <form id="log-workout-form" style="margin-top: 16px;">
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Workout Name:</strong>
-                <input type="text" id="log-name" placeholder="e.g. Morning Run" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Workout Type:</strong>
-                <select id="log-type" style="width:100%; padding: 8px; margin-top: 4px;">
-                    <option value="Strength">Strength</option>
-                    <option value="Cardio">Cardio</option>
-                    <option value="Mobility">Mobility</option>
-                </select>
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Workout Date:</strong>
-                <input type="date" id="log-date" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Duration (Minutes):</strong>
-                <input type="number" id="log-duration" placeholder="e.g. 45" min="1" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Estimated Calories Burned:</strong>
-                <input type="number" id="log-calories" placeholder="e.g. 300" min="1" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Intensity:</strong>
-                <select id="log-intensity" style="width:100%; padding: 8px; margin-top: 4px;">
-                    <option value="Low">Low</option>
-                    <option value="Moderate">Moderate</option>
-                    <option value="High">High</option>
-                </select>
-            </label>
-
-            <label style="display:block; margin-bottom: 16px;">
-                <strong>Notes:</strong>
-                <textarea id="log-notes" rows="3" placeholder="How did the workout feel?" style="width:100%; padding: 8px; margin-top: 4px;"></textarea>
-            </label>
-
-            <div style="display: flex; gap: 8px;">
-                <button type="button" class="ghost-button" id="close-log-modal-btn" style="flex:1;">Cancel</button>
-                <button type="submit" class="cta-button" style="flex:1;">Save Workout</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="modal-overlay hidden" id="dev-modal">
-    <div class="modal-card">
-        <h2>Developer Workout Timeline</h2>
-        <p>Use this popup to add a test workout entry and exercise the streak and history experience.</p>
-
-        <form id="dev-workout-form" style="margin-top: 16px;">
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Date:</strong>
-                <input type="date" id="dev-date" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Workout Name:</strong>
-                <input type="text" id="dev-name" placeholder="e.g. Morning Run" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Duration (Minutes):</strong>
-                <input type="number" id="dev-duration" min="1" value="35" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 16px;">
-                <strong>Calories Burned:</strong>
-                <input type="number" id="dev-calories" min="1" value="250" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <div style="display: flex; gap: 8px;">
-                <button type="button" class="ghost-button" id="close-dev-modal-btn" style="flex:1;">Cancel</button>
-                <button type="submit" class="cta-button" style="flex:1;">Add Workout</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="modal-overlay hidden" id="meal-survey-modal">
-    <div class="modal-card">
-        <h2>Set Your Nutrition Goals</h2>
-        <p>Tell us your calorie and nutrient targets before you access the meals experience.</p>
-
-        <form id="meal-survey-form" style="margin-top: 16px;">
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Daily Calorie Goal:</strong>
-                <input type="number" id="meal-survey-calories" min="500" step="50" value="2000" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Daily Protein Goal (g):</strong>
-                <input type="number" id="meal-survey-protein" min="50" step="5" value="180" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Daily Carbs Goal (g):</strong>
-                <input type="number" id="meal-survey-carbs" min="50" step="5" value="220" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 16px;">
-                <strong>Daily Fat Goal (g):</strong>
-                <input type="number" id="meal-survey-fat" min="20" step="5" value="70" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <button type="submit" class="cta-button" style="width:100%;">Save Nutrition Goals</button>
-        </form>
-    </div>
-</div>
-
-<div class="modal-overlay hidden" id="meal-modal">
-    <div class="modal-card">
-        <h2 id="meal-modal-title">Log a Meal</h2>
-        <p>Add a meal to your daily intake by searching ingredients or updating manually.</p>
-
-        <form id="meal-form" style="margin-top: 16px;">
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Meal Name:</strong>
-                <input type="text" id="meal-name" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-            
-            <label style="display:block; margin-bottom: 12px; position: relative;">
-                <strong>Add Foods to Meal:</strong>
-                <input type="text" id="meal-food-search" placeholder="Type to search foods (e.g., Apple, Chicken)..." style="width:100%; padding: 8px; margin-top: 4px;" autocomplete="off">
-                <div id="meal-food-results" class="autocomplete-results hidden"></div>
-            </label>
-            <div id="meal-selected-foods" class="selected-foods-container" style="margin-bottom: 12px;"></div>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Or Load Preset:</strong>
-                <select id="meal-preset" style="width:100%; padding: 8px; margin-top: 4px;"></select>
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Meal Date:</strong>
-                <input type="date" id="meal-date" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <div class="meal-grid" style="margin-bottom: 12px;">
-                <label style="display:block;">
-                    <strong>Calories:</strong>
-                    <input type="number" id="meal-calories" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
-                </label>
-                <label style="display:block;">
-                    <strong>Protein (g):</strong>
-                    <input type="number" id="meal-protein" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
-                </label>
-                <label style="display:block;">
-                    <strong>Carbs (g):</strong>
-                    <input type="number" id="meal-carbs" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
-                </label>
-                <label style="display:block;">
-                    <strong>Fat (g):</strong>
-                    <input type="number" id="meal-fat" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
-                </label>
-            </div>
-
-            <label style="display:block; margin-bottom: 16px;">
-                <strong>Notes:</strong>
-                <textarea id="meal-notes" rows="3" placeholder="How did this meal fit your day?" style="width:100%; padding: 8px; margin-top: 4px;"></textarea>
-            </label>
-
-            <div style="display: flex; gap: 8px;">
-                <button type="button" class="ghost-button" id="close-meal-modal-btn" style="flex:1;">Cancel</button>
-                <button type="submit" class="cta-button" style="flex:1;">Save Meal</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="modal-overlay hidden" id="meal-history-modal">
-    <div class="modal-card">
-        <h2>Meal History</h2>
-        <p>Review and edit meals you have already logged.</p>
-        <ul id="meal-history-list" class="history-list" style="margin-top: 12px;"></ul>
-    </div>
-</div>
-
-<div class="modal-overlay hidden" id="dev-meal-modal">
-    <div class="modal-card">
-        <h2>Developer Meal Timeline</h2>
-        <p>Use this popup to quickly add a test meal entry and exercise the meal history flow.</p>
-
-        <form id="dev-meal-form" style="margin-top: 16px;">
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Date:</strong>
-                <input type="date" id="dev-meal-date" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 12px;">
-                <strong>Meal Name:</strong>
-                <input type="text" id="dev-meal-name" value="Custom Logged Meal" required style="width:100%; padding: 8px; margin-top: 4px;">
-            </label>
-
-            <label style="display:block; margin-bottom: 12px; position: relative;">
-                <strong>Search & Add Foods:</strong>
-                <input type="text" id="dev-meal-food-search" placeholder="Search comprehensive food list..." style="width:100%; padding: 8px; margin-top: 4px;" autocomplete="off">
-                <div id="dev-meal-food-results" class="autocomplete-results hidden"></div>
-            </label>
-            <div id="dev-meal-selected-foods" class="selected-foods-container" style="margin-bottom: 12px;"></div>
-
-            <div class="meal-grid" style="margin-bottom: 12px;">
-                <label style="display:block;">
-                    <strong>Calories:</strong>
-                    <input type="number" id="dev-meal-calories" min="0" value="0" required style="width:100%; padding: 8px; margin-top: 4px;">
-                </label>
-                <label style="display:block;">
-                    <strong>Protein (g):</strong>
-                    <input type="number" id="dev-meal-protein" min="0" value="0" required style="width:100%; padding: 8px; margin-top: 4px;">
-                </label>
-                <label style="display:block;">
-                    <strong>Carbs (g):</strong>
-                    <input type="number" id="dev-meal-carbs" min="0" value="0" required style="width:100%; padding: 8px; margin-top: 4px;">
-                </label>
-                <label style="display:block;">
-                    <strong>Fat (g):</strong>
-                    <input type="number" id="dev-meal-fat" min="0" value="0" required style="width:100%; padding: 8px; margin-top: 4px;">
-                </label>
-            </div>
-
-            <div style="display: flex; gap: 8px;">
-                <button type="button" class="ghost-button" id="close-dev-meal-modal-btn" style="flex:1;">Cancel</button>
-                <button type="submit" class="cta-button" style="flex:1;">Add Meal</button>
-            </div>
-        </form>
-    </div>
-</div>
 
             <div class="view-panel hidden" id="view-meals">
                 <header class="dashboard-header">
@@ -570,13 +298,301 @@
                     </article>
                 </section>
             </div>
+
             <div class="view-panel hidden" id="view-grocery">
-                <header class="dashboard-header"><h1>Grocery View</h1></header>
-            </div>
-            <div class="view-panel hidden" id="view-scanner">
-                <header class="dashboard-header"><h1>Scanner View</h1></header>
+                <header class="dashboard-header">
+                    <div>
+                        <h1>Grocery Planner</h1>
+                        <p class="small-label">Generate smart grocery lists powered by AI tailored to your nutrients and health goals</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="ghost-button" type="button" data-view="dashboard">Back to Dashboard</button>
+                    </div>
+                </header>
+
+                <section class="dashboard-grid wide-grid">
+                    <article class="panel">
+                        <div class="panel-head">
+                            <h2>Grocery Creator</h2>
+                        </div>
+                        <p>Tell us what nutrients you need and what you want to achieve with your diet.</p>
+
+                        <form id="grocery-form" class="feature-form">
+                            <label>
+                                Target Nutrients
+                                <input type="text" id="grocery-nutrients" placeholder="e.g. High Protein, Potassium, Vitamin C, Fiber" required>
+                            </label>
+
+                            <label>
+                                Grocery & Dietary Goals
+                                <textarea id="grocery-goals" rows="3" placeholder="e.g. Build muscle, lean cut, low budget, Mediterranean style..." required style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(0,0,0,0.12); font-family:var(--font-sans);"></textarea>
+                            </label>
+
+                            <button type="submit" class="cta-button" id="generate-grocery-btn" style="margin-top: 10px;">Generate AI Grocery List</button>
+                        </form>
+                    </article>
+
+                    <article class="panel wide-panel-span-2">
+                        <div class="panel-head">
+                            <h2>Your Grocery List</h2>
+                            <span id="grocery-status-tag">Ready</span>
+                        </div>
+                        <div id="grocery-output" class="feature-output">
+                            <p>Fill out the form on the left and click <strong>Generate AI Grocery List</strong> to build your customized grocery list.</p>
+                        </div>
+                    </article>
+                </section>
             </div>
 
+            <div class="view-panel hidden" id="view-scanner">
+                <header class="dashboard-header">
+                    <div>
+                        <h1>Scanner View</h1>
+                        <p class="small-label">Estimate nutrient values from meal photos</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="ghost-button" type="button" data-view="dashboard">Back to Dashboard</button>
+                    </div>
+                </header>
+                <section class="dashboard-grid wide-grid">
+                    <article class="panel wide-panel-span-2">
+                        <div class="scanner-preview">
+                            <div class="scanner-preview__camera" style="display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px;">
+                                <i class='bx bx-camera' style="font-size:3rem; color:var(--accent-sage);"></i>
+                                <p class="scanner-preview__text">Camera feed preview available in native application.</p>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay hidden" id="survey-modal">
+        <div class="modal-card">
+            <h2>Welcome to Your Workout Setup</h2>
+            <p>Please complete this brief survey so we can cater your dashboard and goals to you.</p>
+            <form id="survey-form" style="margin-top: 16px;">
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Primary Fitness Goal:</strong>
+                    <select id="survey-primary-goal" required style="width:100%; padding: 8px; margin-top: 4px;">
+                        <option value="Weight Loss">Weight Loss</option>
+                        <option value="Muscle Gain">Muscle Gain / Hypertrophy</option>
+                        <option value="Endurance">Cardio & Endurance</option>
+                        <option value="Flexibility">Flexibility & Mobility</option>
+                    </select>
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Weekly Workout Target (Minutes):</strong>
+                    <input type="number" id="survey-time-target" value="150" min="30" step="15" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 16px;">
+                    <strong>Weekly Calorie Goal (kcal):</strong>
+                    <input type="number" id="survey-calorie-target" value="2000" min="500" step="100" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <button type="submit" class="cta-button" style="width: 100%;">Save Preferences & Open Dashboard</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="log-modal">
+        <div class="modal-card">
+            <h2 id="log-workout-btn">Log Completed Workout</h2>
+            <p>Enter the workout duration to update your total time and calories burned.</p>
+            <form id="log-workout-form" style="margin-top: 16px;">
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Workout Name:</strong>
+                    <input type="text" id="log-name" placeholder="e.g. Morning Run" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Workout Type:</strong>
+                    <select id="log-type" style="width:100%; padding: 8px; margin-top: 4px;">
+                        <option value="Strength">Strength</option>
+                        <option value="Cardio">Cardio</option>
+                        <option value="Mobility">Mobility</option>
+                    </select>
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Workout Date:</strong>
+                    <input type="date" id="log-date" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Duration (Minutes):</strong>
+                    <input type="number" id="log-duration" placeholder="e.g. 45" min="1" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Estimated Calories Burned:</strong>
+                    <input type="number" id="log-calories" placeholder="e.g. 300" min="1" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Intensity:</strong>
+                    <select id="log-intensity" style="width:100%; padding: 8px; margin-top: 4px;">
+                        <option value="Low">Low</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="High">High</option>
+                    </select>
+                </label>
+                <label style="display:block; margin-bottom: 16px;">
+                    <strong>Notes:</strong>
+                    <textarea id="log-notes" rows="3" placeholder="How did the workout feel?" style="width:100%; padding: 8px; margin-top: 4px;"></textarea>
+                </label>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="ghost-button" id="close-log-modal-btn" style="flex:1;">Cancel</button>
+                    <button type="submit" class="cta-button" style="flex:1;">Save Workout</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="dev-modal">
+        <div class="modal-card">
+            <h2>Developer Workout Timeline</h2>
+            <p>Use this popup to add a test workout entry and exercise the streak and history experience.</p>
+            <form id="dev-workout-form" style="margin-top: 16px;">
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Date:</strong>
+                    <input type="date" id="dev-date" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Workout Name:</strong>
+                    <input type="text" id="dev-name" placeholder="e.g. Morning Run" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Duration (Minutes):</strong>
+                    <input type="number" id="dev-duration" min="1" value="35" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 16px;">
+                    <strong>Calories Burned:</strong>
+                    <input type="number" id="dev-calories" min="1" value="250" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="ghost-button" id="close-dev-modal-btn" style="flex:1;">Cancel</button>
+                    <button type="submit" class="cta-button" style="flex:1;">Add Workout</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="meal-survey-modal">
+        <div class="modal-card">
+            <h2>Set Your Nutrition Goals</h2>
+            <p>Tell us your calorie and nutrient targets before you access the meals experience.</p>
+            <form id="meal-survey-form" style="margin-top: 16px;">
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Daily Calorie Goal:</strong>
+                    <input type="number" id="meal-survey-calories" min="500" step="50" value="2000" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Daily Protein Goal (g):</strong>
+                    <input type="number" id="meal-survey-protein" min="50" step="5" value="180" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Daily Carbs Goal (g):</strong>
+                    <input type="number" id="meal-survey-carbs" min="50" step="5" value="220" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 16px;">
+                    <strong>Daily Fat Goal (g):</strong>
+                    <input type="number" id="meal-survey-fat" min="20" step="5" value="70" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <button type="submit" class="cta-button" style="width:100%;">Save Nutrition Goals</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="meal-modal">
+        <div class="modal-card">
+            <h2 id="meal-modal-title">Log a Meal</h2>
+            <p>Add a meal to your daily intake by searching ingredients or updating manually.</p>
+            <form id="meal-form" style="margin-top: 16px;">
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Meal Name:</strong>
+                    <input type="text" id="meal-name" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Or Load Preset:</strong>
+                    <select id="meal-preset" style="width:100%; padding: 8px; margin-top: 4px;"></select>
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Meal Date:</strong>
+                    <input type="date" id="meal-date" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <div class="meal-grid" style="margin-bottom: 12px;">
+                    <label style="display:block;">
+                        <strong>Calories:</strong>
+                        <input type="number" id="meal-calories" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
+                    </label>
+                    <label style="display:block;">
+                        <strong>Protein (g):</strong>
+                        <input type="number" id="meal-protein" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
+                    </label>
+                    <label style="display:block;">
+                        <strong>Carbs (g):</strong>
+                        <input type="number" id="meal-carbs" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
+                    </label>
+                    <label style="display:block;">
+                        <strong>Fat (g):</strong>
+                        <input type="number" id="meal-fat" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
+                    </label>
+                </div>
+                <label style="display:block; margin-bottom: 16px;">
+                    <strong>Notes:</strong>
+                    <textarea id="meal-notes" rows="3" placeholder="How did this meal fit your day?" style="width:100%; padding: 8px; margin-top: 4px;"></textarea>
+                </label>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="ghost-button" id="close-meal-modal-btn" style="flex:1;">Cancel</button>
+                    <button type="submit" class="cta-button" style="flex:1;">Save Meal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="meal-history-modal">
+        <div class="modal-card">
+            <h2>Meal History</h2>
+            <p>Review and edit meals you have already logged.</p>
+            <ul id="meal-history-list" class="history-list" style="margin-top: 12px;"></ul>
+            <button class="ghost-button" type="button" onclick="closeMealHistoryModal()" style="margin-top:12px; width:100%;">Close</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="dev-meal-modal">
+        <div class="modal-card">
+            <h2>Developer Meal Timeline</h2>
+            <p>Use this popup to quickly add a test meal entry and exercise the meal history flow.</p>
+            <form id="dev-meal-form" style="margin-top: 16px;">
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Date:</strong>
+                    <input type="date" id="dev-meal-date" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block; margin-bottom: 12px;">
+                    <strong>Meal Name:</strong>
+                    <input type="text" id="dev-meal-name" value="Custom Logged Meal" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <div class="meal-grid" style="margin-bottom: 12px;">
+                    <label style="display:block;">
+                        <strong>Calories:</strong>
+                        <input type="number" id="dev-meal-calories" min="0" value="450" required style="width:100%; padding: 8px; margin-top: 4px;">
+                    </label>
+                    <label style="display:block;">
+                        <strong>Protein (g):</strong>
+                        <input type="number" id="dev-meal-protein" min="0" value="30" required style="width:100%; padding: 8px; margin-top: 4px;">
+                    </label>
+                    <label style="display:block;">
+                        <strong>Carbs (g):</strong>
+                        <input type="number" id="dev-meal-carbs" min="0" value="40" required style="width:100%; padding: 8px; margin-top: 4px;">
+                    </label>
+                    <label style="display:block;">
+                        <strong>Fat (g):</strong>
+                        <input type="number" id="dev-meal-fat" min="0" value="15" required style="width:100%; padding: 8px; margin-top: 4px;">
+                    </label>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="ghost-button" id="close-dev-meal-modal-btn" style="flex:1;">Cancel</button>
+                    <button type="submit" class="cta-button" style="flex:1;">Add Meal</button>
+                </div>
+            </form>
         </div>
     </div>
 

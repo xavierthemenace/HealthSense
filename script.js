@@ -1,13 +1,13 @@
+
 const benefitBoxes = document.getElementById("benefits-section");
 const timelineSection = document.getElementById("timeline");
 const groceryForm = document.getElementById("grocery-form");
 const groceryOutput = document.getElementById("grocery-output");
+const groceryStatusTag = document.getElementById("grocery-status-tag");
+const generateGroceryBtn = document.getElementById("generate-grocery-btn");
 const workoutForm = document.getElementById("workout-form");
 const workoutOutput = document.getElementById("workout-output");
 const workoutTargetLabel = document.getElementById("workout-target-label");
-const mealPreviewButton = document.getElementById("meal-preview");
-const mealOutput = document.getElementById("meal-output");
-const viewTriggers = document.querySelectorAll('[data-view]');
 const viewPanels = document.querySelectorAll('.view-panel');
 const logBtn = document.getElementById("log-workout-btn");
 const openLogModalBtn = document.getElementById("open-log-modal-btn");
@@ -56,6 +56,16 @@ const mealDailyFatGoal = document.getElementById("meal-daily-fat-goal");
 const mealDailySummary = document.getElementById("meal-daily-summary");
 const mealYearlySummary = document.getElementById("meal-yearly-summary");
 
+const openMealModalBtn = document.getElementById("open-meal-modal-btn");
+const openMealHistoryBtn = document.getElementById("open-meal-history-btn");
+const openDevMealModalBtn = document.getElementById("open-dev-meal-modal-btn");
+const closeMealModalBtn = document.getElementById("close-meal-modal-btn");
+const closeDevMealModalBtn = document.getElementById("close-dev-meal-modal-btn");
+const devMealForm = document.getElementById("dev-meal-form");
+
+const mbMenuToggle = document.getElementById("mbmenu");
+const mobileSidemenu = document.getElementById("mobile-sidemenu");
+
 let userFitnessData = {
     hasCompletedSurvey: false,
     primaryGoal: "Weight Loss",
@@ -79,20 +89,6 @@ let userFitnessData = {
     meals: [],
     mealHistory: []
 };
-
-const firstDashboardAccessStorageKey = "healthsense-first-dashboard-access";
-let isFirstDashboardAccess = false;
-try {
-    isFirstDashboardAccess = localStorage.getItem(firstDashboardAccessStorageKey) !== "complete";
-} catch (e) {
-    isFirstDashboardAccess = false;
-}
-
-function markFirstDashboardAccessComplete() {
-    try {
-        localStorage.setItem(firstDashboardAccessStorageKey, "complete");
-    } catch (e) {}
-}
 
 let activeMealId = null;
 
@@ -122,6 +118,58 @@ function formatDate(dateKey) {
     const d = parseInt(parts[2], 10);
     const dateObj = new Date(y, m, d);
     return dateObj.toLocaleDateString();
+}
+
+if (mbMenuToggle && mobileSidemenu) {
+    mbMenuToggle.addEventListener("click", function () {
+        mobileSidemenu.classList.toggle("hidden");
+    });
+}
+
+if (groceryForm) {
+    groceryForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const nutrients = document.getElementById("grocery-nutrients").value.trim();
+        const goals = document.getElementById("grocery-goals").value.trim();
+
+        if (!nutrients || !goals) return;
+
+        // UI Feedback: Disable button and show loading state
+        if (generateGroceryBtn) generateGroceryBtn.disabled = true;
+        if (groceryStatusTag) groceryStatusTag.textContent = "Generating...";
+        if (groceryOutput) {
+            groceryOutput.innerHTML = '<p><em>Generating tailored grocery list...</em></p>';
+        }
+
+        try {
+            // Securely call YOUR server, not OpenRouter directly
+            const response = await fetch('http://127.0.0.1:8080/api/generate-grocery', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nutrients, goals })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.error || 'Failed to generate');
+
+            // UI Update: Success state
+            if (groceryStatusTag) groceryStatusTag.textContent = "Done!";
+            if (groceryOutput) {
+                // Tip: Use a library like 'marked' if you want to turn Markdown into clean HTML
+                groceryOutput.innerText = data.text;
+            }
+
+        } catch (error) {
+            console.error("Error:", error);
+            if (groceryStatusTag) groceryStatusTag.textContent = "Error occurred.";
+            if (groceryOutput) groceryOutput.innerHTML = '<p style="color:red;">Failed to generate list.</p>';
+        } finally {
+            // Always re-enable button
+            if (generateGroceryBtn) generateGroceryBtn.disabled = false;
+        }
+    });
 }
 
 function getStreakMetrics() {
@@ -161,7 +209,7 @@ function getStreakMetrics() {
         const startOfWeek = new Date(weekCursor);
         const dayOffset = startOfWeek.getDay() === 0 ? 6 : startOfWeek.getDay() - 1;
         startOfWeek.setDate(startOfWeek.getDate() - dayOffset);
-        
+
         let sm = String(startOfWeek.getMonth() + 1);
         if (sm.length < 2) sm = "0" + sm;
         let sd = String(startOfWeek.getDate());
@@ -183,10 +231,7 @@ function getStreakMetrics() {
         }
     }
 
-    return {
-        dailyStreak: dailyStreak,
-        weeklyStreak: weeklyStreak
-    };
+    return { dailyStreak: dailyStreak, weeklyStreak: weeklyStreak };
 }
 
 function renderWorkoutHistory() {
@@ -200,28 +245,22 @@ function renderWorkoutHistory() {
     let htmlStr = "";
     for (let i = 0; i < userFitnessData.workoutHistory.length; i++) {
         const item = userFitnessData.workoutHistory[i];
-        let notesText = item.notes;
-        if (!notesText) {
-            notesText = "No notes added.";
-        }
+        let notesText = item.notes || "No notes added.";
         htmlStr += '<li class="history-item"><div><strong>' + item.name + '</strong><span> • ' + item.type + ' • ' + item.duration + ' min • ' + item.calories + ' kcal</span><p>' + notesText + '</p></div><span>' + formatDate(item.dateKey) + '</span></li>';
     }
     workoutHistoryList.innerHTML = htmlStr;
 }
 
-function showView(viewName) {
-    if (viewName === "workout" && !userFitnessData.hasCompletedSurvey) {
-        const sModal = document.getElementById("survey-modal");
-        if (sModal) sModal.classList.remove("hidden");
-        return;
-    }
+function updateActiveNavState(viewName) {
+    const targetView = viewName || "dashboard";
+    document.querySelectorAll('[data-view]').forEach(function (trigger) {
+        const triggerView = trigger.getAttribute("data-view") || "dashboard";
+        trigger.classList.toggle("active-nav-link", triggerView === targetView);
+    });
+}
 
-    if (viewName === "meals" && !userFitnessData.hasCompletedMealSurvey) {
-        if (mealSurveyModal) {
-            mealSurveyModal.classList.remove("hidden");
-        }
-        return;
-    }
+function showView(viewName) {
+    updateActiveNavState(viewName);
 
     for (let i = 0; i < viewPanels.length; i++) {
         const panel = viewPanels[i];
@@ -235,8 +274,21 @@ function showView(viewName) {
         }
     }
 
+    if (mobileSidemenu) {
+        mobileSidemenu.classList.add("hidden");
+    }
+
     if (viewName === "dashboard" || viewName === "meals") {
         refreshMealAndDashboardUI();
+    }
+
+    if (viewName === "workout" && !userFitnessData.hasCompletedSurvey) {
+        const sModal = document.getElementById("survey-modal");
+        if (sModal) sModal.classList.remove("hidden");
+    }
+
+    if (viewName === "meals" && !userFitnessData.hasCompletedMealSurvey) {
+        if (mealSurveyModal) mealSurveyModal.classList.remove("hidden");
     }
 }
 
@@ -244,13 +296,8 @@ function renderWorkoutSummary() {
     if (dashboardWorkoutsCount) {
         dashboardWorkoutsCount.textContent = userFitnessData.workoutCount;
     }
-
     if (dashboardWorkoutSummary) {
-        let summaryText = userFitnessData.lastWorkoutSummary;
-        if (!summaryText) {
-            summaryText = "No workouts logged yet.";
-        }
-        dashboardWorkoutSummary.textContent = summaryText;
+        dashboardWorkoutSummary.textContent = userFitnessData.lastWorkoutSummary || "No workouts logged yet.";
     }
 }
 
@@ -307,105 +354,24 @@ function applyPresetToMealForm(preset) {
     if (fatField) fatField.value = preset.fat;
 }
 
-function getMealDataFromForm() {
-    let selectedPresetName = "";
-    if (mealPresetSelect) selectedPresetName = mealPresetSelect.value;
-    
-    let preset = null;
-    for (let i = 0; i < mealPresets.length; i++) {
-        if (mealPresets[i].name === selectedPresetName) {
-            preset = mealPresets[i];
-            break;
-        }
-    }
-
-    let nameVal = document.getElementById("meal-name").value.trim();
-    if (!nameVal) {
-        if (preset) {
-            nameVal = preset.name;
-        } else {
-            nameVal = "Meal";
-        }
-    }
-
-    let calVal = parseInt(document.getElementById("meal-calories").value, 10);
-    if (isNaN(calVal)) calVal = preset ? preset.calories : 0;
-
-    let proVal = parseInt(document.getElementById("meal-protein").value, 10);
-    if (isNaN(proVal)) proVal = preset ? preset.protein : 0;
-
-    let carbVal = parseInt(document.getElementById("meal-carbs").value, 10);
-    if (isNaN(carbVal)) carbVal = preset ? preset.carbs : 0;
-
-    let fatVal = parseInt(document.getElementById("meal-fat").value, 10);
-    if (isNaN(fatVal)) fatVal = preset ? preset.fat : 0;
-
-    const notesVal = document.getElementById("meal-notes").value.trim();
-    let dateVal = document.getElementById("meal-date").value;
-    if (!dateVal) dateVal = new Date();
-
-    return {
-        name: nameVal,
-        calories: calVal,
-        protein: proVal,
-        carbs: carbVal,
-        fat: fatVal,
-        notes: notesVal,
-        dateKey: normalizeDate(dateVal),
-        source: "meal-modal"
-    };
-}
-
 function refreshMealAndDashboardUI() {
+    renderMealPresets();
     renderMealHistory();
     renderMealDashboard();
     renderDashboardSummaryCards();
     updateDashboardStats();
 }
 
-function persistMealEntry(mealData) {
-    if (activeMealId) {
-        let existingIndex = -1;
-        for (let i = 0; i < userFitnessData.meals.length; i++) {
-            if (userFitnessData.meals[i].id === activeMealId) {
-                existingIndex = i;
-                break;
-            }
-        }
-
-        let existingHistoryIndex = -1;
-        for (let i = 0; i < userFitnessData.mealHistory.length; i++) {
-            if (userFitnessData.mealHistory[i].id === activeMealId) {
-                existingHistoryIndex = i;
-                break;
-            }
-        }
-
-        if (existingIndex >= 0) {
-            userFitnessData.meals[existingIndex] = Object.assign({}, userFitnessData.meals[existingIndex], mealData, { id: activeMealId });
-        }
-        if (existingHistoryIndex >= 0) {
-            userFitnessData.mealHistory[existingHistoryIndex] = Object.assign({}, userFitnessData.mealHistory[existingHistoryIndex], mealData, { id: activeMealId });
-        }
-    } else {
-        const newEntry = Object.assign({}, mealData, { id: Date.now() });
-        userFitnessData.meals.unshift(newEntry);
-        userFitnessData.mealHistory.unshift(newEntry);
-    }
-
-    refreshMealAndDashboardUI();
-}
-
 function renderMealPresets() {
     if (!mealPresetSelect && !mealPresetList) return;
 
-    if (mealPresetSelect) {
+    if (mealPresetSelect && mealPresetSelect.options.length <= 1) {
         let opts = '<option value="">Select a preset</option>';
         for (let i = 0; i < mealPresets.length; i++) {
             opts += '<option value="' + mealPresets[i].name + '">' + mealPresets[i].name + '</option>';
         }
         mealPresetSelect.innerHTML = opts;
-        mealPresetSelect.addEventListener("change", function() {
+        mealPresetSelect.addEventListener("change", function () {
             const selectedPresetName = mealPresetSelect.value;
             let preset = null;
             for (let i = 0; i < mealPresets.length; i++) {
@@ -439,8 +405,7 @@ function renderMealHistory() {
     let htmlStr = "";
     for (let i = 0; i < userFitnessData.mealHistory.length; i++) {
         const entry = userFitnessData.mealHistory[i];
-        let notesText = entry.notes;
-        if (!notesText) notesText = "No notes added.";
+        let notesText = entry.notes || "No notes added.";
 
         htmlStr += '<li class="history-item"><div><strong>' + entry.name + '</strong><span> • ' + entry.calories + ' kcal • ' + entry.protein + 'g protein</span><p>' + notesText + '</p></div><div><button class="ghost-button" type="button" data-edit-meal-id="' + entry.id + '">Edit</button><span>' + formatDate(entry.dateKey) + '</span></div></li>';
     }
@@ -448,21 +413,15 @@ function renderMealHistory() {
 
     const editBtns = document.querySelectorAll('[data-edit-meal-id]');
     for (let i = 0; i < editBtns.length; i++) {
-        editBtns[i].addEventListener("click", function() {
+        editBtns[i].addEventListener("click", function () {
             const mealId = Number(this.getAttribute("data-edit-meal-id"));
-            let entry = null;
-            for (let j = 0; j < userFitnessData.mealHistory.length; j++) {
-                if (userFitnessData.mealHistory[j].id === mealId) {
-                    entry = userFitnessData.mealHistory[j];
-                    break;
-                }
-            }
+            let entry = userFitnessData.mealHistory.find(j => j.id === mealId);
             if (!entry) return;
             activeMealId = mealId;
-            
+
             const modalTitle = document.getElementById("meal-modal-title");
             if (modalTitle) modalTitle.textContent = "Edit Meal";
-            
+
             document.getElementById("meal-name").value = entry.name;
             document.getElementById("meal-calories").value = entry.calories;
             document.getElementById("meal-protein").value = entry.protein;
@@ -470,8 +429,8 @@ function renderMealHistory() {
             document.getElementById("meal-fat").value = entry.fat;
             document.getElementById("meal-notes").value = entry.notes || "";
             document.getElementById("meal-date").value = entry.dateKey;
-            document.getElementById("meal-preset").value = entry.name;
-            
+            if (document.getElementById("meal-preset")) document.getElementById("meal-preset").value = entry.name;
+
             closeMealHistoryModal();
             openMealModal();
         });
@@ -526,32 +485,19 @@ function renderDashboardSummaryCards() {
 
     const progressPercent = weekMeals.length > 0 ? Math.round((metTargets / nutrientTargets.length) * 100) : 0;
 
-    if (dashboardGroceryProgress) {
-        dashboardGroceryProgress.textContent = progressPercent + "%";
-    }
-
+    if (dashboardGroceryProgress) dashboardGroceryProgress.textContent = progressPercent + "%";
     if (dashboardGroceryProgressDetail) {
-        if (weekMeals.length > 0) {
-            dashboardGroceryProgressDetail.textContent = metTargets + " of 4 nutrition targets met this week";
-        } else {
-            dashboardGroceryProgressDetail.textContent = "No meal data yet.";
-        }
+        dashboardGroceryProgressDetail.textContent = weekMeals.length > 0 ? metTargets + " of 4 nutrition targets met this week" : "No meal data yet.";
     }
 
     if (dashboardMealUsage) {
         const count = weekMeals.length;
-        const suffix = count === 1 ? "" : "s";
-        dashboardMealUsage.textContent = count + " meal" + suffix;
+        dashboardMealUsage.textContent = count + " meal" + (count === 1 ? "" : "s");
     }
 
     if (dashboardMealUsageDetail) {
         const count = weekMeals.length;
-        if (count > 0) {
-            const suffix = count === 1 ? "" : "s";
-            dashboardMealUsageDetail.textContent = count + " meal" + suffix + " logged this week";
-        } else {
-            dashboardMealUsageDetail.textContent = "No meals logged this week";
-        }
+        dashboardMealUsageDetail.textContent = count > 0 ? count + " meal" + (count === 1 ? "" : "s") + " logged this week" : "No meals logged this week";
     }
 
     if (dashboardScannerConfidence) {
@@ -565,73 +511,61 @@ function renderDashboardSummaryCards() {
 
 function renderMealDashboard() {
     const totals = getTodaysMealTotals();
-    
-    const mealDailyCaloriesEl = document.getElementById("meal-daily-calories");
-    const mealDailyCaloriesGoalEl = document.getElementById("meal-daily-calories-goal");
-    const mealDailyProteinEl = document.getElementById("meal-daily-protein");
-    const mealDailyProteinGoalEl = document.getElementById("meal-daily-protein-goal");
-    const mealDailyCarbsEl = document.getElementById("meal-daily-carbs");
-    const mealDailyCarbsGoalEl = document.getElementById("meal-daily-carbs-goal");
-    const mealDailyFatEl = document.getElementById("meal-daily-fat");
-    const mealDailyFatGoalEl = document.getElementById("meal-daily-fat-goal");
-    const mealDailySummaryEl = document.getElementById("meal-daily-summary");
-    const mealYearlySummaryEl = document.getElementById("meal-yearly-summary");
-    
-    const dashboardCaloriesProgressEl = document.getElementById("dashboard-calories-progress");
-    const dashboardProteinProgressEl = document.getElementById("dashboard-protein-progress");
-    const dashboardCarbsProgressEl = document.getElementById("dashboard-carbs-progress");
-    const dashboardFatProgressEl = document.getElementById("dashboard-fat-progress");
-    
-    const dashboardCaloriesBarEl = document.getElementById("dashboard-calories-bar");
-    const dashboardProteinBarEl = document.getElementById("dashboard-protein-bar");
-    const dashboardCarbsBarEl = document.getElementById("dashboard-carbs-bar");
-    const dashboardFatBarEl = document.getElementById("dashboard-fat-bar");
-    
-    const dashboardPlannedMealsEl = document.getElementById("dashboard-planned-meals");
-    const dashboardMealGoalSummaryEl = document.getElementById("dashboard-meal-goal-summary");
 
-    if (mealDailyCaloriesEl) mealDailyCaloriesEl.textContent = totals.calories + " kcal";
-    if (mealDailyCaloriesGoalEl) {
+    if (mealDailyCalories) mealDailyCalories.textContent = totals.calories + " kcal";
+    if (mealDailyCaloriesGoal) {
         const remaining = Math.max(0, userFitnessData.mealCalorieGoal - totals.calories);
-        mealDailyCaloriesGoalEl.textContent = remaining + " kcal remaining";
+        mealDailyCaloriesGoal.textContent = remaining + " kcal remaining";
     }
 
-    if (mealDailyProteinEl) mealDailyProteinEl.textContent = totals.protein + "g";
-    if (mealDailyProteinGoalEl) {
+    if (mealDailyProtein) mealDailyProtein.textContent = totals.protein + "g";
+    if (mealDailyProteinGoal) {
         const remaining = Math.max(0, userFitnessData.mealProteinGoal - totals.protein);
-        mealDailyProteinGoalEl.textContent = remaining + "g remaining";
+        mealDailyProteinGoal.textContent = remaining + "g remaining";
     }
 
-    if (mealDailyCarbsEl) mealDailyCarbsEl.textContent = totals.carbs + "g";
-    if (mealDailyCarbsGoalEl) {
+    if (mealDailyCarbs) mealDailyCarbs.textContent = totals.carbs + "g";
+    if (mealDailyCarbsGoal) {
         const remaining = Math.max(0, userFitnessData.mealCarbGoal - totals.carbs);
-        mealDailyCarbsGoalEl.textContent = remaining + "g remaining";
+        mealDailyCarbsGoal.textContent = remaining + "g remaining";
     }
 
-    if (mealDailyFatEl) mealDailyFatEl.textContent = totals.fat + "g";
-    if (mealDailyFatGoalEl) {
+    if (mealDailyFat) mealDailyFat.textContent = totals.fat + "g";
+    if (mealDailyFatGoal) {
         const remaining = Math.max(0, userFitnessData.mealFatGoal - totals.fat);
-        mealDailyFatGoalEl.textContent = remaining + "g remaining";
+        mealDailyFatGoal.textContent = remaining + "g remaining";
     }
 
-    if (mealDailySummaryEl) {
-        if (totals.calories > 0) {
-            mealDailySummaryEl.textContent = totals.calories + " kcal • " + totals.protein + "g protein • " + totals.carbs + "g carbs • " + totals.fat + "g fat";
-        } else {
-            mealDailySummaryEl.textContent = "No meals logged yet.";
-        }
+    if (mealDailySummary) {
+        mealDailySummary.textContent = totals.calories > 0 ? totals.calories + " kcal • " + totals.protein + "g protein • " + totals.carbs + "g carbs • " + totals.fat + "g fat" : "No meals logged yet.";
     }
 
     const yearlyTotals = getYearlyMealTotals();
-    if (mealYearlySummaryEl) {
-        mealYearlySummaryEl.textContent = yearlyTotals.calories + " kcal logged this year.";
+    if (mealYearlySummary) {
+        mealYearlySummary.textContent = yearlyTotals.calories + " kcal logged this year.";
     }
 
+    const weekMeals = getMealsForCurrentWeek();
+    const weeklyTotals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+    for (let i = 0; i < weekMeals.length; i++) {
+        weeklyTotals.calories += weekMeals[i].calories;
+        weeklyTotals.protein += weekMeals[i].protein;
+        weeklyTotals.carbs += weekMeals[i].carbs;
+        weeklyTotals.fat += weekMeals[i].fat;
+    }
+
+    const weeklyTargets = {
+        calories: Math.max(1, userFitnessData.mealCalorieGoal * 7),
+        protein: Math.max(1, userFitnessData.mealProteinGoal * 7),
+        carbs: Math.max(1, userFitnessData.mealCarbGoal * 7),
+        fat: Math.max(1, userFitnessData.mealFatGoal * 7)
+    };
+
     const progressMap = [
-        { goal: userFitnessData.mealCalorieGoal, total: totals.calories, label: dashboardCaloriesProgressEl, bar: dashboardCaloriesBarEl },
-        { goal: userFitnessData.mealProteinGoal, total: totals.protein, label: dashboardProteinProgressEl, bar: dashboardProteinBarEl },
-        { goal: userFitnessData.mealCarbGoal, total: totals.carbs, label: dashboardCarbsProgressEl, bar: dashboardCarbsBarEl },
-        { goal: userFitnessData.mealFatGoal, total: totals.fat, label: dashboardFatProgressEl, bar: dashboardFatBarEl }
+        { goal: weeklyTargets.calories, total: weeklyTotals.calories, label: dashboardCaloriesProgress, bar: dashboardCaloriesBar },
+        { goal: weeklyTargets.protein, total: weeklyTotals.protein, label: dashboardProteinProgress, bar: dashboardProteinBar },
+        { goal: weeklyTargets.carbs, total: weeklyTotals.carbs, label: dashboardCarbsProgress, bar: dashboardCarbsBar },
+        { goal: weeklyTargets.fat, total: weeklyTotals.fat, label: dashboardFatProgress, bar: dashboardFatBar }
     ];
 
     for (let i = 0; i < progressMap.length; i++) {
@@ -641,17 +575,17 @@ function renderMealDashboard() {
         if (item.bar) item.bar.style.width = percent + "%";
     }
 
-    if (dashboardPlannedMealsEl) {
+    if (dashboardPlannedMeals) {
         let plannedHtml = "";
         const limit = mealPresets.length < 3 ? mealPresets.length : 3;
         for (let i = 0; i < limit; i++) {
             plannedHtml += "<li>" + mealPresets[i].name + " • " + mealPresets[i].calories + " kcal</li>";
         }
-        dashboardPlannedMealsEl.innerHTML = plannedHtml;
+        dashboardPlannedMeals.innerHTML = plannedHtml;
     }
 
-    if (dashboardMealGoalSummaryEl) {
-        dashboardMealGoalSummaryEl.textContent = "Targets: " + userFitnessData.mealCalorieGoal + " kcal • " + userFitnessData.mealProteinGoal + "g protein • " + userFitnessData.mealCarbGoal + "g carbs • " + userFitnessData.mealFatGoal + "g fat";
+    if (dashboardMealGoalSummary) {
+        dashboardMealGoalSummary.textContent = "This week targets: " + userFitnessData.mealCalorieGoal * 7 + " kcal • " + userFitnessData.mealProteinGoal * 7 + "g protein • " + userFitnessData.mealCarbGoal * 7 + "g carbs • " + userFitnessData.mealFatGoal * 7 + "g fat";
     }
 
     renderDashboardSummaryCards();
@@ -665,48 +599,29 @@ function updateDashboardStats() {
 
     const timeRemaining = userFitnessData.timeGoal - userFitnessData.timeLogged;
     const timeEl = document.getElementById("stat-time");
-    if (timeEl) {
-        timeEl.textContent = userFitnessData.timeLogged + " Mins";
-    }
+    if (timeEl) timeEl.textContent = userFitnessData.timeLogged + " Mins";
 
     const timeGoalEl = document.getElementById("stat-time-goal");
     if (timeGoalEl) {
-        if (timeRemaining > 0) {
-            timeGoalEl.textContent = timeRemaining + " mins away from target (" + userFitnessData.timeGoal + "m goal)";
-        } else {
-            timeGoalEl.textContent = "Goal reached! 🎉";
-        }
+        timeGoalEl.textContent = timeRemaining > 0 ? timeRemaining + " mins away from target (" + userFitnessData.timeGoal + "m goal)" : "Goal reached! 🎉";
     }
 
     const caloriesRemaining = userFitnessData.calorieGoal - userFitnessData.caloriesBurned;
     const caloriesEl = document.getElementById("stat-calories");
-    if (caloriesEl) {
-        caloriesEl.textContent = userFitnessData.caloriesBurned.toLocaleString() + " kcal";
-    }
+    if (caloriesEl) caloriesEl.textContent = userFitnessData.caloriesBurned.toLocaleString() + " kcal";
 
     const caloriesGoalEl = document.getElementById("stat-calories-goal");
     if (caloriesGoalEl) {
-        if (caloriesRemaining > 0) {
-            caloriesGoalEl.textContent = caloriesRemaining.toLocaleString() + " kcal away from goal (" + userFitnessData.calorieGoal.toLocaleString() + " target)";
-        } else {
-            caloriesGoalEl.textContent = "Goal reached! 🔥";
-        }
+        caloriesGoalEl.textContent = caloriesRemaining > 0 ? caloriesRemaining.toLocaleString() + " kcal away from goal (" + userFitnessData.calorieGoal.toLocaleString() + " target)" : "Goal reached! 🔥";
     }
 
     const daysEl = document.getElementById("stat-days");
-    if (daysEl) {
-        daysEl.textContent = userFitnessData.daysLogged + " / " + userFitnessData.daysTarget + " Days";
-    }
+    if (daysEl) daysEl.textContent = userFitnessData.daysLogged + " / " + userFitnessData.daysTarget + " Days";
 
     const daysGoalEl = document.getElementById("stat-days-goal");
     if (daysGoalEl) {
         const daysRemaining = userFitnessData.daysTarget - userFitnessData.daysLogged;
-        if (daysRemaining > 0) {
-            const daySuffix = daysRemaining === 1 ? "" : "s";
-            daysGoalEl.textContent = daysRemaining + " day" + daySuffix + " away from target";
-        } else {
-            daysGoalEl.textContent = "Goal reached! 🎉";
-        }
+        daysGoalEl.textContent = daysRemaining > 0 ? daysRemaining + " day" + (daysRemaining === 1 ? "" : "s") + " away from target" : "Goal reached! 🎉";
     }
 
     const streakMetrics = getStreakMetrics();
@@ -714,14 +629,10 @@ function updateDashboardStats() {
     userFitnessData.weeklyStreak = streakMetrics.weeklyStreak;
 
     const streakEl = document.getElementById("stat-streak");
-    if (streakEl) {
-        streakEl.textContent = userFitnessData.streak + " Days";
-    }
+    if (streakEl) streakEl.textContent = userFitnessData.streak + " Days";
 
     const streakDetailEl = document.getElementById("stat-streak-detail");
-    if (streakDetailEl) {
-        streakDetailEl.textContent = "Daily streak • weekly streak " + userFitnessData.weeklyStreak;
-    }
+    if (streakDetailEl) streakDetailEl.textContent = "Daily streak • weekly streak " + userFitnessData.weeklyStreak;
 
     renderWorkoutSummary();
     renderWorkoutHistory();
@@ -742,11 +653,16 @@ function openDevModal() {
 
 function closeLogModal() {
     if (logModal) logModal.classList.add("hidden");
-    if (logWorkoutForm) logWorkoutForm.reset();
+    const lForm = document.getElementById("log-workout-form");
+    if (lForm) lForm.reset();
 }
 
 function openMealModal() {
     if (mealModal) mealModal.classList.remove("hidden");
+    const dateInput = document.getElementById("meal-date");
+    if (dateInput && !dateInput.value) {
+        dateInput.value = normalizeDate(new Date());
+    }
     const nameField = document.getElementById("meal-name");
     if (nameField) nameField.focus();
 }
@@ -770,6 +686,10 @@ function closeMealHistoryModal() {
 
 function openDevMealModal() {
     if (devMealModal) devMealModal.classList.remove("hidden");
+    const devDateInput = document.getElementById("dev-meal-date");
+    if (devDateInput && !devDateInput.value) {
+        devDateInput.value = normalizeDate(new Date());
+    }
     const nameField = document.getElementById("dev-meal-name");
     if (nameField) nameField.focus();
 }
@@ -783,6 +703,34 @@ function closeDevMealModal() {
 function closeDevModal() {
     if (devModal) devModal.classList.add("hidden");
     if (devWorkoutForm) devWorkoutForm.reset();
+}
+
+function addMealEntry(mealObj) {
+    const id = activeMealId ? activeMealId : Date.now();
+    const name = mealObj.name || "Custom Meal";
+    const calories = parseInt(mealObj.calories, 10) || 0;
+    const protein = parseInt(mealObj.protein, 10) || 0;
+    const carbs = parseInt(mealObj.carbs, 10) || 0;
+    const fat = parseInt(mealObj.fat, 10) || 0;
+
+    const rawDate = mealObj.dateKey || mealObj.date || new Date();
+    const dateKey = normalizeDate(rawDate);
+    const notes = mealObj.notes || "";
+
+    const entry = { id, name, calories, protein, carbs, fat, dateKey, notes };
+
+    if (activeMealId) {
+        const index = userFitnessData.mealHistory.findIndex(m => m.id === activeMealId);
+        if (index !== -1) userFitnessData.mealHistory[index] = entry;
+        const mealIndex = userFitnessData.meals.findIndex(m => m.id === activeMealId);
+        if (mealIndex !== -1) userFitnessData.meals[mealIndex] = entry;
+    } else {
+        userFitnessData.mealHistory.unshift(entry);
+        userFitnessData.meals.unshift(entry);
+    }
+
+    activeMealId = null;
+    refreshMealAndDashboardUI();
 }
 
 function resetWorkoutTracking() {
@@ -805,8 +753,7 @@ function addWorkoutEntry(dataObj) {
     const intensity = dataObj.intensity;
     const notes = dataObj.notes;
     const dateKey = dataObj.dateKey;
-    let source = dataObj.source;
-    if (!source) source = "manual";
+    let source = dataObj.source || "manual";
 
     const normalizedDateKey = normalizeDate(dateKey || new Date());
     const entry = {
@@ -839,19 +786,20 @@ function addWorkoutEntry(dataObj) {
     updateDashboardStats();
 }
 
-if (viewTriggers) {
-    viewTriggers.forEach(function(trigger) {
-        trigger.addEventListener("click", function(event) {
-            event.preventDefault();
-            let viewName = this.getAttribute("data-view") || "dashboard";
-            showView(viewName);
-        });
-    });
-}
+document.addEventListener("click", function (event) {
+    const trigger = event.target.closest("[data-view]");
+    if (!trigger) return;
+
+    event.preventDefault();
+    const viewName = trigger.getAttribute("data-view") || "dashboard";
+    showView(viewName);
+});
+
+updateActiveNavState("dashboard");
 
 const surveyForm = document.getElementById("survey-form");
 if (surveyForm) {
-    surveyForm.addEventListener("submit", function(event) {
+    surveyForm.addEventListener("submit", function (event) {
         event.preventDefault();
         userFitnessData.hasCompletedSurvey = true;
         userFitnessData.primaryGoal = document.getElementById("survey-primary-goal").value;
@@ -867,43 +815,141 @@ if (surveyForm) {
     });
 }
 
+if (mealSurveyForm) {
+    mealSurveyForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        userFitnessData.hasCompletedMealSurvey = true;
+        userFitnessData.mealCalorieGoal = parseInt(document.getElementById("meal-survey-calories").value, 10) || 2000;
+        userFitnessData.mealProteinGoal = parseInt(document.getElementById("meal-survey-protein").value, 10) || 180;
+        userFitnessData.mealCarbGoal = parseInt(document.getElementById("meal-survey-carbs").value, 10) || 220;
+        userFitnessData.mealFatGoal = parseInt(document.getElementById("meal-survey-fat").value, 10) || 70;
+
+        if (mealSurveyModal) mealSurveyModal.classList.add("hidden");
+
+        refreshMealAndDashboardUI();
+        showView("meals");
+    });
+}
+
+if (workoutForm) {
+    workoutForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const focus = document.getElementById("workout-focus") ? document.getElementById("workout-focus").value : "strength";
+        const equipment = document.getElementById("equipment-select") ? document.getElementById("equipment-select").value : "dumbbells";
+
+        const routines = {
+            strength: {
+                dumbbells: ["Goblet Squats: 3 x 10", "Dumbbell Bench Press: 3 x 8", "Single-Arm Rows: 3 x 10", "Dumbbell Shoulder Press: 3 x 10"],
+                bodyweight: ["Push-ups: 3 x 12", "Bodyweight Squats: 3 x 15", "Walking Lunges: 3 x 10 per leg", "Plank Hold: 3 x 45s"],
+                yoga: ["Core Power Hold: 3 x 30s", "Bodyweight Glute Bridges: 3 x 15", "Bear Crawl Hold: 3 x 30s"]
+            },
+            cardio: {
+                dumbbells: ["Dumbbell Thrusters: 4 x 40s", "Renegade Rows: 4 x 40s", "Dumbbell Swing: 4 x 40s"],
+                bodyweight: ["Jumping Jacks: 4 x 45s", "High Knees: 4 x 45s", "Burpees: 4 x 30s", "Mountain Climbers: 4 x 45s"],
+                yoga: ["Sun Salutation Flow: 5 rounds", "Dynamic Runner Lunges: 3 x 10", "Jump Rope Skips (Shadow): 3 x 1 min"]
+            },
+            mobility: {
+                dumbbells: ["Light Goblet Squat Hold: 3 x 30s", "Halos: 3 x 8 per side", "RDL Stretch: 3 x 10"],
+                bodyweight: ["World's Greatest Stretch: 3 per side", "Cat-Cow Stretch: 10 reps", "90/90 Hip Switches: 8 per side"],
+                yoga: ["Downward-Facing Dog Hold: 3 x 45s", "Pigeon Pose: 1 min per side", "Child's Pose Flow: 2 mins"]
+            }
+        };
+
+        const list = (routines[focus] && routines[focus][equipment]) ? routines[focus][equipment] : routines.strength.bodyweight;
+
+        if (workoutTargetLabel) {
+            workoutTargetLabel.textContent = focus.toUpperCase() + " • " + equipment.toUpperCase();
+        }
+
+        if (workoutOutput) {
+            let routineHtml = "<h4>Custom Plan Details</h4><ul>";
+            for (let i = 0; i < list.length; i++) {
+                routineHtml += "<li>" + list[i] + "</li>";
+            }
+            routineHtml += "</ul>";
+            workoutOutput.innerHTML = routineHtml;
+        }
+    });
+}
+
 const logWorkoutForm = document.getElementById("log-workout-form");
 
 if (openLogModalBtn) {
-    openLogModalBtn.addEventListener("click", function(event) {
+    openLogModalBtn.addEventListener("click", function (event) {
         event.preventDefault();
         openLogModal();
     });
 }
 
 if (logBtn) {
-    logBtn.addEventListener("click", function(event) {
+    logBtn.addEventListener("click", function (event) {
         event.preventDefault();
         openLogModal();
     });
 }
 
 if (closeLogModalBtn) {
-    closeLogModalBtn.addEventListener("click", function(event) {
+    closeLogModalBtn.addEventListener("click", function (event) {
         event.preventDefault();
         closeLogModal();
     });
 }
 
 if (logModal) {
-    logModal.addEventListener("click", function(event) {
-        if (event.target === logModal) {
-            closeLogModal();
-        }
+    logModal.addEventListener("click", function (event) {
+        if (event.target === logModal) closeLogModal();
+    });
+}
+
+if (quickDevWorkoutBtn) {
+    quickDevWorkoutBtn.addEventListener("click", function (event) {
+        event.preventDefault();
+        openDevModal();
+    });
+}
+
+if (closeDevModalBtn) {
+    closeDevModalBtn.addEventListener("click", function (event) {
+        event.preventDefault();
+        closeDevModal();
+    });
+}
+
+if (devModal) {
+    devModal.addEventListener("click", function (event) {
+        if (event.target === devModal) closeDevModal();
+    });
+}
+
+if (devWorkoutForm) {
+    devWorkoutForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const dateVal = document.getElementById("dev-date").value;
+        const nameVal = document.getElementById("dev-name").value.trim() || "Test Workout";
+        const durationVal = parseInt(document.getElementById("dev-duration").value, 10) || 30;
+        const caloriesVal = parseInt(document.getElementById("dev-calories").value, 10) || 200;
+
+        addWorkoutEntry({
+            name: nameVal,
+            type: "Test Routine",
+            duration: durationVal,
+            calories: caloriesVal,
+            intensity: "Moderate",
+            notes: "Developer test session",
+            dateKey: dateVal,
+            source: "dev-modal"
+        });
+
+        closeDevModal();
     });
 }
 
 if (logWorkoutForm) {
-    logWorkoutForm.addEventListener("submit", function(event) {
+    logWorkoutForm.addEventListener("submit", function (event) {
         event.preventDefault();
 
-        let workoutName = document.getElementById("log-name").value.trim();
-        if (!workoutName) workoutName = "Workout";
+        let workoutName = document.getElementById("log-name").value.trim() || "Workout";
         const workoutType = document.getElementById("log-type").value;
         const durationInput = parseInt(document.getElementById("log-duration").value, 10);
         const caloriesInput = parseInt(document.getElementById("log-calories").value, 10);
@@ -925,3 +971,77 @@ if (logWorkoutForm) {
         closeLogModal();
     });
 }
+
+if (openMealModalBtn) openMealModalBtn.addEventListener("click", openMealModal);
+if (openMealHistoryBtn) openMealHistoryBtn.addEventListener("click", openMealHistoryModal);
+if (openDevMealModalBtn) openDevMealModalBtn.addEventListener("click", openDevMealModal);
+if (closeMealModalBtn) closeMealModalBtn.addEventListener("click", closeMealModal);
+if (closeDevMealModalBtn) closeDevMealModalBtn.addEventListener("click", closeDevMealModal);
+
+if (mealModal) {
+    mealModal.addEventListener("click", function (event) {
+        if (event.target === mealModal) closeMealModal();
+    });
+}
+
+if (mealHistoryModal) {
+    mealHistoryModal.addEventListener("click", function (event) {
+        if (event.target === mealHistoryModal) closeMealHistoryModal();
+    });
+}
+
+if (devMealModal) {
+    devMealModal.addEventListener("click", function (event) {
+        if (event.target === devMealModal) closeDevMealModal();
+    });
+}
+
+if (mealForm) {
+    mealForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        addMealEntry({
+            name: document.getElementById("meal-name").value.trim(),
+            calories: document.getElementById("meal-calories").value,
+            protein: document.getElementById("meal-protein").value,
+            carbs: document.getElementById("meal-carbs").value,
+            fat: document.getElementById("meal-fat").value,
+            dateKey: document.getElementById("meal-date").value,
+            notes: document.getElementById("meal-notes").value.trim()
+        });
+        closeMealModal();
+    });
+}
+
+if (devMealForm) {
+    devMealForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        addMealEntry({
+            name: document.getElementById("dev-meal-name").value.trim(),
+            calories: document.getElementById("dev-meal-calories").value,
+            protein: document.getElementById("dev-meal-protein").value,
+            carbs: document.getElementById("dev-meal-carbs").value,
+            fat: document.getElementById("dev-meal-fat").value,
+            dateKey: document.getElementById("dev-meal-date").value,
+            notes: "Test meal entry"
+        });
+        closeDevMealModal();
+    });
+}
+
+function checkScrollAnimations() {
+    if (benefitBoxes) {
+        const topPos = benefitBoxes.getBoundingClientRect().top;
+        if (topPos < window.innerHeight - 50) {
+            benefitBoxes.classList.add("scroll-activated");
+        }
+    }
+    if (timelineSection) {
+        const topPos = timelineSection.getBoundingClientRect().top;
+        if (topPos < window.innerHeight - 50) {
+            timelineSection.classList.add("scroll-activated");
+        }
+    }
+}
+
+window.addEventListener("scroll", checkScrollAnimations);
+window.addEventListener("DOMContentLoaded", checkScrollAnimations);
