@@ -58,23 +58,23 @@
                 <section class="stats-row">
                     <article class="stat-card">
                         <span class="stat-label">Weekly grocery progress</span>
-                        <strong>72%</strong>
-                        <p>4 of 5 nutrition targets met</p>
+                        <strong id="dashboard-grocery-progress">0%</strong>
+                        <p id="dashboard-grocery-progress-detail">No meal data yet.</p>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Meal planner usage</span>
-                        <strong>3 plans</strong>
-                        <p>Planned meals this week</p>
+                        <strong id="dashboard-meal-usage">0 meals</strong>
+                        <p id="dashboard-meal-usage-detail">No meals logged this week</p>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Workouts logged</span>
-                        <strong id="dashboard-workouts-count">5</strong>
+                        <strong id="dashboard-workouts-count">0</strong>
                         <p>Sessions completed this week</p>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Scanner confidence</span>
-                        <strong>81%</strong>
-                        <p>Estimated nutrient accuracy</p>
+                        <strong id="dashboard-scanner-confidence">No scan data</strong>
+                        <p id="dashboard-scanner-confidence-detail">Scanner data will appear here</p>
                     </article>
                 </section>
 
@@ -88,30 +88,30 @@
                             <div class="nutrient-row">
                                 <div class="nutrient-meta">
                                     <span class="nutrient-name">Calories</span>
-                                    <span class="nutrient-value">86%</span>
+                                    <span class="nutrient-value" id="dashboard-calories-progress">0%</span>
                                 </div>
-                                <div class="bar-track"><div class="bar-fill calories"></div></div>
+                                <div class="bar-track"><div class="bar-fill calories" id="dashboard-calories-bar"></div></div>
                             </div>
                             <div class="nutrient-row">
                                 <div class="nutrient-meta">
                                     <span class="nutrient-name">Protein</span>
-                                    <span class="nutrient-value">91%</span>
+                                    <span class="nutrient-value" id="dashboard-protein-progress">0%</span>
                                 </div>
-                                <div class="bar-track"><div class="bar-fill protein"></div></div>
+                                <div class="bar-track"><div class="bar-fill protein" id="dashboard-protein-bar"></div></div>
                             </div>
                             <div class="nutrient-row">
                                 <div class="nutrient-meta">
                                     <span class="nutrient-name">Carbs</span>
-                                    <span class="nutrient-value">74%</span>
+                                    <span class="nutrient-value" id="dashboard-carbs-progress">0%</span>
                                 </div>
-                                <div class="bar-track"><div class="bar-fill carbs"></div></div>
+                                <div class="bar-track"><div class="bar-fill carbs" id="dashboard-carbs-bar"></div></div>
                             </div>
                             <div class="nutrient-row">
                                 <div class="nutrient-meta">
                                     <span class="nutrient-name">Fat</span>
-                                    <span class="nutrient-value">68%</span>
+                                    <span class="nutrient-value" id="dashboard-fat-progress">0%</span>
                                 </div>
-                                <div class="bar-track"><div class="bar-fill fat"></div></div>
+                                <div class="bar-track"><div class="bar-fill fat" id="dashboard-fat-bar"></div></div>
                             </div>
                         </div>
                     </article>
@@ -120,12 +120,11 @@
                 <section class="dashboard-grid wide-grid">
                     <article class="panel small-panel">
                         <h2>Meal planner overview</h2>
-                        <p>Designed for weight loss and recovery with balanced meals.</p>
-                        <ul class="metric-list">
-                            <li>Breakfast: High protein</li>
-                            <li>Lunch: Low carb</li>
-                            <li>Dinner: Veg-heavy</li>
+                        <p>Planned meals and daily nutrition goals for the week.</p>
+                        <ul class="metric-list" id="dashboard-planned-meals">
+                            <li>Loading meals…</li>
                         </ul>
+                        <p id="dashboard-meal-goal-summary" style="margin-top: 8px; color: var(--text-secondary);"></p>
                     </article>
 
                     <article class="panel small-panel">
@@ -158,6 +157,7 @@
                     </div>
                     <div class="header-actions">
                         <button class="ghost-button" id="open-log-modal-btn" type="button"><i class='bx bx-plus'></i> Log Completed Workout</button>
+                        <button class="ghost-button" id="dev-quick-add-btn" type="button">Add Test Workout</button>
                         <button class="ghost-button" type="button" data-view="dashboard">Back to Dashboard</button>
                     </div>
                 </header>
@@ -165,23 +165,23 @@
                 <section class="stats-row">
                     <article class="stat-card">
                         <span class="stat-label">Weekly Active Days</span>
-                        <strong id="stat-days">3 / 5 Days</strong>
-                        <p id="stat-days-goal">2 days away from target</p>
+                        <strong id="stat-days">0 / 5 Days</strong>
+                        <p id="stat-days-goal">5 days away from target</p>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Total Workout Time</span>
-                        <strong id="stat-time">120 Mins</strong>
-                        <p id="stat-time-goal">30 mins away from goal (150m target)</p>
+                        <strong id="stat-time">0 Mins</strong>
+                        <p id="stat-time-goal">150 mins away from goal (150m target)</p>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Calories Burned</span>
-                        <strong id="stat-calories">1,450 kcal</strong>
-                        <p id="stat-calories-goal">550 kcal away from goal (2,000 target)</p>
+                        <strong id="stat-calories">0 kcal</strong>
+                        <p id="stat-calories-goal">2,000 kcal away from goal (2,000 target)</p>
                     </article>
                     <article class="stat-card">
                         <span class="stat-label">Current Streak</span>
-                        <strong id="stat-streak">4 Weeks</strong>
-                        <p>On track for personal best!</p>
+                        <strong id="stat-streak">0 Days</strong>
+                        <p id="stat-streak-detail">Daily streak • weekly streak 0</p>
                     </article>
                 </section>
 
@@ -221,6 +221,16 @@
                             <span id="workout-target-label">Custom Routine</span>
                         </div>
                         <div id="workout-output" class="feature-output" aria-live="polite"></div>
+                    </article>
+                </section>
+
+                <section class="dashboard-grid wide-grid">
+                    <article class="panel wide-panel-span-2">
+                        <div class="panel-head">
+                            <h2>Workout History</h2>
+                            <span>Every logged session, including the dates you choose</span>
+                        </div>
+                        <ul id="workout-history-list" class="history-list"></ul>
                     </article>
                 </section>
             </main>
@@ -277,6 +287,11 @@
             </label>
 
             <label style="display:block; margin-bottom: 12px;">
+                <strong>Workout Date:</strong>
+                <input type="date" id="log-date" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <label style="display:block; margin-bottom: 12px;">
                 <strong>Duration (Minutes):</strong>
                 <input type="number" id="log-duration" placeholder="e.g. 45" min="1" required style="width:100%; padding: 8px; margin-top: 4px;">
             </label>
@@ -308,8 +323,252 @@
     </div>
 </div>
 
+<div class="modal-overlay hidden" id="dev-modal">
+    <div class="modal-card">
+        <h2>Developer Workout Timeline</h2>
+        <p>Use this popup to add a test workout entry and exercise the streak and history experience.</p>
+
+        <form id="dev-workout-form" style="margin-top: 16px;">
+            <label style="display:block; margin-bottom: 12px;">
+                <strong>Date:</strong>
+                <input type="date" id="dev-date" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <label style="display:block; margin-bottom: 12px;">
+                <strong>Workout Name:</strong>
+                <input type="text" id="dev-name" placeholder="e.g. Morning Run" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <label style="display:block; margin-bottom: 12px;">
+                <strong>Duration (Minutes):</strong>
+                <input type="number" id="dev-duration" min="1" value="35" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <label style="display:block; margin-bottom: 16px;">
+                <strong>Calories Burned:</strong>
+                <input type="number" id="dev-calories" min="1" value="250" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="ghost-button" id="close-dev-modal-btn" style="flex:1;">Cancel</button>
+                <button type="submit" class="cta-button" style="flex:1;">Add Workout</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay hidden" id="meal-survey-modal">
+    <div class="modal-card">
+        <h2>Set Your Nutrition Goals</h2>
+        <p>Tell us your calorie and nutrient targets before you access the meals experience.</p>
+
+        <form id="meal-survey-form" style="margin-top: 16px;">
+            <label style="display:block; margin-bottom: 12px;">
+                <strong>Daily Calorie Goal:</strong>
+                <input type="number" id="meal-survey-calories" min="500" step="50" value="2000" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <label style="display:block; margin-bottom: 12px;">
+                <strong>Daily Protein Goal (g):</strong>
+                <input type="number" id="meal-survey-protein" min="50" step="5" value="180" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <label style="display:block; margin-bottom: 12px;">
+                <strong>Daily Carbs Goal (g):</strong>
+                <input type="number" id="meal-survey-carbs" min="50" step="5" value="220" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <label style="display:block; margin-bottom: 16px;">
+                <strong>Daily Fat Goal (g):</strong>
+                <input type="number" id="meal-survey-fat" min="20" step="5" value="70" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <button type="submit" class="cta-button" style="width:100%;">Save Nutrition Goals</button>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay hidden" id="meal-modal">
+    <div class="modal-card">
+        <h2 id="meal-modal-title">Log a Meal</h2>
+        <p>Add a meal to your daily intake by searching ingredients or updating manually.</p>
+
+        <form id="meal-form" style="margin-top: 16px;">
+            <label style="display:block; margin-bottom: 12px;">
+                <strong>Meal Name:</strong>
+                <input type="text" id="meal-name" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+            
+            <label style="display:block; margin-bottom: 12px; position: relative;">
+                <strong>Add Foods to Meal:</strong>
+                <input type="text" id="meal-food-search" placeholder="Type to search foods (e.g., Apple, Chicken)..." style="width:100%; padding: 8px; margin-top: 4px;" autocomplete="off">
+                <div id="meal-food-results" class="autocomplete-results hidden"></div>
+            </label>
+            <div id="meal-selected-foods" class="selected-foods-container" style="margin-bottom: 12px;"></div>
+
+            <label style="display:block; margin-bottom: 12px;">
+                <strong>Or Load Preset:</strong>
+                <select id="meal-preset" style="width:100%; padding: 8px; margin-top: 4px;"></select>
+            </label>
+
+            <label style="display:block; margin-bottom: 12px;">
+                <strong>Meal Date:</strong>
+                <input type="date" id="meal-date" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <div class="meal-grid" style="margin-bottom: 12px;">
+                <label style="display:block;">
+                    <strong>Calories:</strong>
+                    <input type="number" id="meal-calories" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block;">
+                    <strong>Protein (g):</strong>
+                    <input type="number" id="meal-protein" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block;">
+                    <strong>Carbs (g):</strong>
+                    <input type="number" id="meal-carbs" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block;">
+                    <strong>Fat (g):</strong>
+                    <input type="number" id="meal-fat" min="0" step="1" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+            </div>
+
+            <label style="display:block; margin-bottom: 16px;">
+                <strong>Notes:</strong>
+                <textarea id="meal-notes" rows="3" placeholder="How did this meal fit your day?" style="width:100%; padding: 8px; margin-top: 4px;"></textarea>
+            </label>
+
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="ghost-button" id="close-meal-modal-btn" style="flex:1;">Cancel</button>
+                <button type="submit" class="cta-button" style="flex:1;">Save Meal</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay hidden" id="meal-history-modal">
+    <div class="modal-card">
+        <h2>Meal History</h2>
+        <p>Review and edit meals you have already logged.</p>
+        <ul id="meal-history-list" class="history-list" style="margin-top: 12px;"></ul>
+    </div>
+</div>
+
+<div class="modal-overlay hidden" id="dev-meal-modal">
+    <div class="modal-card">
+        <h2>Developer Meal Timeline</h2>
+        <p>Use this popup to quickly add a test meal entry and exercise the meal history flow.</p>
+
+        <form id="dev-meal-form" style="margin-top: 16px;">
+            <label style="display:block; margin-bottom: 12px;">
+                <strong>Date:</strong>
+                <input type="date" id="dev-meal-date" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <label style="display:block; margin-bottom: 12px;">
+                <strong>Meal Name:</strong>
+                <input type="text" id="dev-meal-name" value="Custom Logged Meal" required style="width:100%; padding: 8px; margin-top: 4px;">
+            </label>
+
+            <label style="display:block; margin-bottom: 12px; position: relative;">
+                <strong>Search & Add Foods:</strong>
+                <input type="text" id="dev-meal-food-search" placeholder="Search comprehensive food list..." style="width:100%; padding: 8px; margin-top: 4px;" autocomplete="off">
+                <div id="dev-meal-food-results" class="autocomplete-results hidden"></div>
+            </label>
+            <div id="dev-meal-selected-foods" class="selected-foods-container" style="margin-bottom: 12px;"></div>
+
+            <div class="meal-grid" style="margin-bottom: 12px;">
+                <label style="display:block;">
+                    <strong>Calories:</strong>
+                    <input type="number" id="dev-meal-calories" min="0" value="0" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block;">
+                    <strong>Protein (g):</strong>
+                    <input type="number" id="dev-meal-protein" min="0" value="0" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block;">
+                    <strong>Carbs (g):</strong>
+                    <input type="number" id="dev-meal-carbs" min="0" value="0" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+                <label style="display:block;">
+                    <strong>Fat (g):</strong>
+                    <input type="number" id="dev-meal-fat" min="0" value="0" required style="width:100%; padding: 8px; margin-top: 4px;">
+                </label>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="ghost-button" id="close-dev-meal-modal-btn" style="flex:1;">Cancel</button>
+                <button type="submit" class="cta-button" style="flex:1;">Add Meal</button>
+            </div>
+        </form>
+    </div>
+</div>
+
             <div class="view-panel hidden" id="view-meals">
-                <header class="dashboard-header"><h1>Meals View</h1></header>
+                <header class="dashboard-header">
+                    <div>
+                        <h1>Meal Planner</h1>
+                        <p class="small-label">Track meals, review your nutrition, and compare intake to your goals</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="ghost-button" id="open-meal-modal-btn" type="button">Log Meal</button>
+                        <button class="ghost-button" id="open-meal-history-btn" type="button">Meal History</button>
+                        <button class="ghost-button" id="open-dev-meal-modal-btn" type="button">Add Test Meal</button>
+                        <button class="ghost-button" type="button" data-view="dashboard">Back to Dashboard</button>
+                    </div>
+                </header>
+
+                <section class="stats-row">
+                    <article class="stat-card">
+                        <span class="stat-label">Calories Today</span>
+                        <strong id="meal-daily-calories">0 kcal</strong>
+                        <p id="meal-daily-calories-goal">0 kcal remaining</p>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-label">Protein Today</span>
+                        <strong id="meal-daily-protein">0g</strong>
+                        <p id="meal-daily-protein-goal">0g remaining</p>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-label">Carbs Today</span>
+                        <strong id="meal-daily-carbs">0g</strong>
+                        <p id="meal-daily-carbs-goal">0g remaining</p>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-label">Fat Today</span>
+                        <strong id="meal-daily-fat">0g</strong>
+                        <p id="meal-daily-fat-goal">0g remaining</p>
+                    </article>
+                </section>
+
+                <section class="dashboard-grid wide-grid">
+                    <article class="panel">
+                        <div class="panel-head">
+                            <h2>Today's Intake</h2>
+                            <span>Nutrition totals for the current day</span>
+                        </div>
+                        <div class="meal-grid">
+                            <div class="meal-card">
+                                <h3>Daily Summary</h3>
+                                <p id="meal-daily-summary">No meals logged yet.</p>
+                            </div>
+                            <div class="meal-card">
+                                <h3>Yearly Intake</h3>
+                                <p id="meal-yearly-summary">0 kcal logged this year.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panel-head">
+                            <h2>Planned Meals</h2>
+                            <span>Common meal presets you can log quickly</span>
+                        </div>
+                        <ul class="metric-list" id="meal-preset-list"></ul>
+                    </article>
+                </section>
             </div>
             <div class="view-panel hidden" id="view-grocery">
                 <header class="dashboard-header"><h1>Grocery View</h1></header>
