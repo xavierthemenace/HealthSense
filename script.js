@@ -1,4 +1,3 @@
-
 const benefitBoxes = document.getElementById("benefits-section");
 const timelineSection = document.getElementById("timeline");
 const groceryForm = document.getElementById("grocery-form");
@@ -121,13 +120,13 @@ function formatDate(dateKey) {
 }
 
 if (mbMenuToggle && mobileSidemenu) {
-    mbMenuToggle.addEventListener("click", function () {
+    mbMenuToggle.addEventListener("click", function() {
         mobileSidemenu.classList.toggle("hidden");
     });
 }
 
 if (groceryForm) {
-    groceryForm.addEventListener("submit", async function (event) {
+    groceryForm.addEventListener("submit", async function(event) {
         event.preventDefault();
 
         const nutrients = document.getElementById("grocery-nutrients").value.trim();
@@ -135,38 +134,93 @@ if (groceryForm) {
 
         if (!nutrients || !goals) return;
 
-        // UI Feedback: Disable button and show loading state
         if (generateGroceryBtn) generateGroceryBtn.disabled = true;
         if (groceryStatusTag) groceryStatusTag.textContent = "Generating...";
         if (groceryOutput) {
             groceryOutput.innerHTML = '<p><em>Generating tailored grocery list...</em></p>';
         }
 
+        const promptText = `Act as an expert nutritionist and fitness coach. Generate a tailored grocery list for a user with the following targets and goals:
+- Target Nutrients: ${nutrients}
+- Dietary/Fitness Goals: ${goals}
+
+Format the output clearly into categorized bullet-pointed sections (e.g., Proteins, Complex Carbs, Healthy Fats, Produce/Micronutrients). Keep concise and actionable.`;
+
         try {
-            // Securely call YOUR server, not OpenRouter directly
-            const response = await fetch('http://127.0.0.1:8080/api/generate-grocery', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nutrients, goals })
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": window.location.href, 
+                    "X-Title": "Grocery Generator"
+                },
+                body: JSON.stringify({
+                    model: "openrouter/free",
+                    messages: [
+                        { role: "system", content: "You are a helpful nutrition assistant." },
+                        { role: "user", content: promptText }
+                    ],
+                    stream: true
+                })
             });
 
-            const data = await response.json();
-
-            if (!response.ok) throw new Error(data.error || 'Failed to generate');
-
-            // UI Update: Success state
-            if (groceryStatusTag) groceryStatusTag.textContent = "Done!";
-            if (groceryOutput) {
-                // Tip: Use a library like 'marked' if you want to turn Markdown into clean HTML
-                groceryOutput.innerText = data.text;
+            if (!response.ok) {
+                throw new Error(`API Request failed with status ${response.status}`);
             }
 
-        } catch (error) {
-            console.error("Error:", error);
-            if (groceryStatusTag) groceryStatusTag.textContent = "Error occurred.";
-            if (groceryOutput) groceryOutput.innerHTML = '<p style="color:red;">Failed to generate list.</p>';
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let accumulatedMarkdown = "";
+            let buffer = ""; 
+
+            if (groceryOutput) groceryOutput.innerHTML = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                
+                
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    if (trimmedLine.startsWith("data: ")) {
+                        const dataStr = trimmedLine.replace("data: ", "").trim();
+                        if (dataStr === "[DONE]") break;
+
+                        try {
+                            const parsed = JSON.parse(dataStr);
+                            const content = parsed.choices[0]?.delta?.content || "";
+                            accumulatedMarkdown += content;
+
+                            if (groceryOutput) {
+                                groceryOutput.innerHTML = accumulatedMarkdown
+                                    .replace(/&/g, "&amp;")
+                                    .replace(/</g, "&lt;")
+                                    .replace(/>/g, "&gt;")
+                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                    .replace(/^\s*[-*]\s+(.*$)/gim, '• $1')
+                                    .replace(/\n/g, '<br>');
+                            }
+                        } catch (err) {
+                            
+                        }
+                    }
+                }
+            }
+
+            if (groceryStatusTag) groceryStatusTag.textContent = "Generated";
+        } catch (err) {
+            console.error("Error generating grocery list:", err);
+            if (groceryOutput) {
+                groceryOutput.innerHTML = `<p style="color:red;">Failed to generate grocery list. Please try again.</p>`;
+            }
+            if (groceryStatusTag) groceryStatusTag.textContent = "Error";
         } finally {
-            // Always re-enable button
             if (generateGroceryBtn) generateGroceryBtn.disabled = false;
         }
     });
@@ -209,7 +263,7 @@ function getStreakMetrics() {
         const startOfWeek = new Date(weekCursor);
         const dayOffset = startOfWeek.getDay() === 0 ? 6 : startOfWeek.getDay() - 1;
         startOfWeek.setDate(startOfWeek.getDate() - dayOffset);
-
+        
         let sm = String(startOfWeek.getMonth() + 1);
         if (sm.length < 2) sm = "0" + sm;
         let sd = String(startOfWeek.getDate());
@@ -253,7 +307,7 @@ function renderWorkoutHistory() {
 
 function updateActiveNavState(viewName) {
     const targetView = viewName || "dashboard";
-    document.querySelectorAll('[data-view]').forEach(function (trigger) {
+    document.querySelectorAll('[data-view]').forEach(function(trigger) {
         const triggerView = trigger.getAttribute("data-view") || "dashboard";
         trigger.classList.toggle("active-nav-link", triggerView === targetView);
     });
@@ -371,7 +425,7 @@ function renderMealPresets() {
             opts += '<option value="' + mealPresets[i].name + '">' + mealPresets[i].name + '</option>';
         }
         mealPresetSelect.innerHTML = opts;
-        mealPresetSelect.addEventListener("change", function () {
+        mealPresetSelect.addEventListener("change", function() {
             const selectedPresetName = mealPresetSelect.value;
             let preset = null;
             for (let i = 0; i < mealPresets.length; i++) {
@@ -413,15 +467,15 @@ function renderMealHistory() {
 
     const editBtns = document.querySelectorAll('[data-edit-meal-id]');
     for (let i = 0; i < editBtns.length; i++) {
-        editBtns[i].addEventListener("click", function () {
+        editBtns[i].addEventListener("click", function() {
             const mealId = Number(this.getAttribute("data-edit-meal-id"));
             let entry = userFitnessData.mealHistory.find(j => j.id === mealId);
             if (!entry) return;
             activeMealId = mealId;
-
+            
             const modalTitle = document.getElementById("meal-modal-title");
             if (modalTitle) modalTitle.textContent = "Edit Meal";
-
+            
             document.getElementById("meal-name").value = entry.name;
             document.getElementById("meal-calories").value = entry.calories;
             document.getElementById("meal-protein").value = entry.protein;
@@ -430,7 +484,7 @@ function renderMealHistory() {
             document.getElementById("meal-notes").value = entry.notes || "";
             document.getElementById("meal-date").value = entry.dateKey;
             if (document.getElementById("meal-preset")) document.getElementById("meal-preset").value = entry.name;
-
+            
             closeMealHistoryModal();
             openMealModal();
         });
@@ -511,7 +565,7 @@ function renderDashboardSummaryCards() {
 
 function renderMealDashboard() {
     const totals = getTodaysMealTotals();
-
+    
     if (mealDailyCalories) mealDailyCalories.textContent = totals.calories + " kcal";
     if (mealDailyCaloriesGoal) {
         const remaining = Math.max(0, userFitnessData.mealCalorieGoal - totals.calories);
@@ -712,7 +766,7 @@ function addMealEntry(mealObj) {
     const protein = parseInt(mealObj.protein, 10) || 0;
     const carbs = parseInt(mealObj.carbs, 10) || 0;
     const fat = parseInt(mealObj.fat, 10) || 0;
-
+    
     const rawDate = mealObj.dateKey || mealObj.date || new Date();
     const dateKey = normalizeDate(rawDate);
     const notes = mealObj.notes || "";
@@ -786,7 +840,7 @@ function addWorkoutEntry(dataObj) {
     updateDashboardStats();
 }
 
-document.addEventListener("click", function (event) {
+document.addEventListener("click", function(event) {
     const trigger = event.target.closest("[data-view]");
     if (!trigger) return;
 
@@ -799,7 +853,7 @@ updateActiveNavState("dashboard");
 
 const surveyForm = document.getElementById("survey-form");
 if (surveyForm) {
-    surveyForm.addEventListener("submit", function (event) {
+    surveyForm.addEventListener("submit", function(event) {
         event.preventDefault();
         userFitnessData.hasCompletedSurvey = true;
         userFitnessData.primaryGoal = document.getElementById("survey-primary-goal").value;
@@ -816,7 +870,7 @@ if (surveyForm) {
 }
 
 if (mealSurveyForm) {
-    mealSurveyForm.addEventListener("submit", function (event) {
+    mealSurveyForm.addEventListener("submit", function(event) {
         event.preventDefault();
         userFitnessData.hasCompletedMealSurvey = true;
         userFitnessData.mealCalorieGoal = parseInt(document.getElementById("meal-survey-calories").value, 10) || 2000;
@@ -832,7 +886,7 @@ if (mealSurveyForm) {
 }
 
 if (workoutForm) {
-    workoutForm.addEventListener("submit", function (event) {
+    workoutForm.addEventListener("submit", function(event) {
         event.preventDefault();
         const focus = document.getElementById("workout-focus") ? document.getElementById("workout-focus").value : "strength";
         const equipment = document.getElementById("equipment-select") ? document.getElementById("equipment-select").value : "dumbbells";
@@ -875,54 +929,54 @@ if (workoutForm) {
 const logWorkoutForm = document.getElementById("log-workout-form");
 
 if (openLogModalBtn) {
-    openLogModalBtn.addEventListener("click", function (event) {
+    openLogModalBtn.addEventListener("click", function(event) {
         event.preventDefault();
         openLogModal();
     });
 }
 
 if (logBtn) {
-    logBtn.addEventListener("click", function (event) {
+    logBtn.addEventListener("click", function(event) {
         event.preventDefault();
         openLogModal();
     });
 }
 
 if (closeLogModalBtn) {
-    closeLogModalBtn.addEventListener("click", function (event) {
+    closeLogModalBtn.addEventListener("click", function(event) {
         event.preventDefault();
         closeLogModal();
     });
 }
 
 if (logModal) {
-    logModal.addEventListener("click", function (event) {
+    logModal.addEventListener("click", function(event) {
         if (event.target === logModal) closeLogModal();
     });
 }
 
 if (quickDevWorkoutBtn) {
-    quickDevWorkoutBtn.addEventListener("click", function (event) {
+    quickDevWorkoutBtn.addEventListener("click", function(event) {
         event.preventDefault();
         openDevModal();
     });
 }
 
 if (closeDevModalBtn) {
-    closeDevModalBtn.addEventListener("click", function (event) {
+    closeDevModalBtn.addEventListener("click", function(event) {
         event.preventDefault();
         closeDevModal();
     });
 }
 
 if (devModal) {
-    devModal.addEventListener("click", function (event) {
+    devModal.addEventListener("click", function(event) {
         if (event.target === devModal) closeDevModal();
     });
 }
 
 if (devWorkoutForm) {
-    devWorkoutForm.addEventListener("submit", function (event) {
+    devWorkoutForm.addEventListener("submit", function(event) {
         event.preventDefault();
 
         const dateVal = document.getElementById("dev-date").value;
@@ -946,7 +1000,7 @@ if (devWorkoutForm) {
 }
 
 if (logWorkoutForm) {
-    logWorkoutForm.addEventListener("submit", function (event) {
+    logWorkoutForm.addEventListener("submit", function(event) {
         event.preventDefault();
 
         let workoutName = document.getElementById("log-name").value.trim() || "Workout";
@@ -979,25 +1033,25 @@ if (closeMealModalBtn) closeMealModalBtn.addEventListener("click", closeMealModa
 if (closeDevMealModalBtn) closeDevMealModalBtn.addEventListener("click", closeDevMealModal);
 
 if (mealModal) {
-    mealModal.addEventListener("click", function (event) {
+    mealModal.addEventListener("click", function(event) {
         if (event.target === mealModal) closeMealModal();
     });
 }
 
 if (mealHistoryModal) {
-    mealHistoryModal.addEventListener("click", function (event) {
+    mealHistoryModal.addEventListener("click", function(event) {
         if (event.target === mealHistoryModal) closeMealHistoryModal();
     });
 }
 
 if (devMealModal) {
-    devMealModal.addEventListener("click", function (event) {
+    devMealModal.addEventListener("click", function(event) {
         if (event.target === devMealModal) closeDevMealModal();
     });
 }
 
 if (mealForm) {
-    mealForm.addEventListener("submit", function (event) {
+    mealForm.addEventListener("submit", function(event) {
         event.preventDefault();
         addMealEntry({
             name: document.getElementById("meal-name").value.trim(),
@@ -1013,7 +1067,7 @@ if (mealForm) {
 }
 
 if (devMealForm) {
-    devMealForm.addEventListener("submit", function (event) {
+    devMealForm.addEventListener("submit", function(event) {
         event.preventDefault();
         addMealEntry({
             name: document.getElementById("dev-meal-name").value.trim(),

@@ -1,18 +1,23 @@
 import 'dotenv/config';
 import express from 'express';
-import cors from 'cors'; // 1. Import CORS
+import cors from 'cors';
 import OpenAI from 'openai';
 
 const app = express();
 
-// 2. Enable CORS for all incoming requests
-app.use(cors()); 
+// 1. Explicitly configure CORS to handle preflight requests
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
-// Initialize OpenAI client with fixed OpenRouter base URL
+// Initialize OpenAI client with OpenRouter's endpoint
 const openai = new OpenAI({
-    baseURL: 'https://openrouter.ai', 
-    apiKey: process.env.OPENROUTER_API_KEY, 
+    baseURL: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPENROUTER_API_KEY,
 });
 
 app.post('/api/generate-grocery', async (req, res) => {
@@ -26,7 +31,7 @@ app.post('/api/generate-grocery', async (req, res) => {
 
     try {
         const completion = await openai.chat.completions.create({
-            model: 'openrouter/free', // Use a valid free model slug
+            model: 'openrouter/free',
             messages: [{ role: 'user', content: promptText }],
         });
 
@@ -34,9 +39,12 @@ app.post('/api/generate-grocery', async (req, res) => {
         res.json({ text: textResponse });
 
     } catch (error) {
-        console.error("OpenRouter Error:", error);
+        console.error("OpenRouter Error:", error?.response?.data || error.message || error);
         res.status(500).json({ error: "Failed to communicate with OpenRouter" });
     }
 });
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+// 2. Bind to 0.0.0.0 so both localhost and 127.0.0.1 work seamlessly
+app.listen(8080, '0.0.0.0', () => {
+    console.log('Server running on http://127.0.0.1:8080 and http://localhost:8080');
+});
