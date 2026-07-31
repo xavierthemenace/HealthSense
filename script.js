@@ -1,3 +1,4 @@
+const apiUrl = import.meta.env.OPENROUTER_API_KEY;
 const benefitBoxes = document.getElementById("benefits-section");
 const timelineSection = document.getElementById("timeline");
 const groceryForm = document.getElementById("grocery-form");
@@ -150,7 +151,7 @@ Format the output clearly into categorized bullet-pointed sections (e.g., Protei
             const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
                 headers: {
-                    "Authorization": "Bearer",
+                    "Authorization": "Bearer" + apiUrl + "",
                     "Content-Type": "application/json",
                     "HTTP-Referer": window.location.href, 
                     "X-Title": "Grocery Generator"
@@ -182,7 +183,6 @@ Format the output clearly into categorized bullet-pointed sections (e.g., Protei
 
                 buffer += decoder.decode(value, { stream: true });
                 const lines = buffer.split("\n");
-                
                 
                 buffer = lines.pop() || "";
 
@@ -316,8 +316,8 @@ function updateActiveNavState(viewName) {
 function showView(viewName) {
     updateActiveNavState(viewName);
 
-    for (let i = 0; i < viewPanels.length; i++) {
-        const panel = viewPanels[i];
+    const panels = document.querySelectorAll('.view-panel');
+    panels.forEach(function(panel) {
         const isActive = panel.id === "view-" + viewName;
         if (isActive) {
             panel.classList.remove("hidden");
@@ -326,7 +326,7 @@ function showView(viewName) {
             panel.classList.add("hidden");
             panel.setAttribute("aria-hidden", "true");
         }
-    }
+    });
 
     if (mobileSidemenu) {
         mobileSidemenu.classList.add("hidden");
@@ -842,11 +842,11 @@ function addWorkoutEntry(dataObj) {
 
 document.addEventListener("click", function(event) {
     const trigger = event.target.closest("[data-view]");
-    if (!trigger) return;
-
-    event.preventDefault();
-    const viewName = trigger.getAttribute("data-view") || "dashboard";
-    showView(viewName);
+    if (trigger) {
+        event.preventDefault();
+        const viewName = trigger.getAttribute("data-view") || "dashboard";
+        showView(viewName);
+    }
 });
 
 updateActiveNavState("dashboard");
