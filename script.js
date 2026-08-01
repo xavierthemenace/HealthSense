@@ -1,4 +1,3 @@
-const apiUrl = import.meta.env.OPENROUTER_API_KEY;
 const benefitBoxes = document.getElementById("benefits-section");
 const timelineSection = document.getElementById("timeline");
 const groceryForm = document.getElementById("grocery-form");
@@ -141,83 +140,41 @@ if (groceryForm) {
             groceryOutput.innerHTML = '<p><em>Generating tailored grocery list...</em></p>';
         }
 
-        const promptText = `Act as an expert nutritionist and fitness coach. Generate a tailored grocery list for a user with the following targets and goals:
-- Target Nutrients: ${nutrients}
-- Dietary/Fitness Goals: ${goals}
-
-Format the output clearly into categorized bullet-pointed sections (e.g., Proteins, Complex Carbs, Healthy Fats, Produce/Micronutrients). Keep concise and actionable.`;
-
         try {
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            // Calls backend Express server running generate-grocery.js
+            const response = await fetch("http://localhost:8080/api/generate-grocery", {
                 method: "POST",
                 headers: {
-                    "Authorization": "Bearer" + apiUrl + "",
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": window.location.href, 
-                    "X-Title": "Grocery Generator"
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    model: "openrouter/free",
-                    messages: [
-                        { role: "system", content: "You are a helpful nutrition assistant." },
-                        { role: "user", content: promptText }
-                    ],
-                    stream: true
+                    nutrients: nutrients,
+                    goals: goals
                 })
             });
 
             if (!response.ok) {
-                throw new Error(`API Request failed with status ${response.status}`);
+                throw new Error(`Server returned status ${response.status}`);
             }
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder("utf-8");
-            let accumulatedMarkdown = "";
-            let buffer = ""; 
+            const data = await response.json();
+            const resultText = data.text || "No response text received.";
 
-            if (groceryOutput) groceryOutput.innerHTML = "";
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split("\n");
-                
-                buffer = lines.pop() || "";
-
-                for (const line of lines) {
-                    const trimmedLine = line.trim();
-                    if (trimmedLine.startsWith("data: ")) {
-                        const dataStr = trimmedLine.replace("data: ", "").trim();
-                        if (dataStr === "[DONE]") break;
-
-                        try {
-                            const parsed = JSON.parse(dataStr);
-                            const content = parsed.choices[0]?.delta?.content || "";
-                            accumulatedMarkdown += content;
-
-                            if (groceryOutput) {
-                                groceryOutput.innerHTML = accumulatedMarkdown
-                                    .replace(/&/g, "&amp;")
-                                    .replace(/</g, "&lt;")
-                                    .replace(/>/g, "&gt;")
-                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                    .replace(/^\s*[-*]\s+(.*$)/gim, '• $1')
-                                    .replace(/\n/g, '<br>');
-                            }
-                        } catch (err) {
-                            
-                        }
-                    }
-                }
+            if (groceryOutput) {
+                groceryOutput.innerHTML = resultText
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/^\s*[-*]\s+(.*$)/gim, '• $1')
+                    .replace(/\n/g, '<br>');
             }
 
             if (groceryStatusTag) groceryStatusTag.textContent = "Generated";
         } catch (err) {
             console.error("Error generating grocery list:", err);
             if (groceryOutput) {
-                groceryOutput.innerHTML = `<p style="color:red;">Failed to generate grocery list. Please try again.</p>`;
+                groceryOutput.innerHTML = `<p style="color:red;">Failed to generate grocery list. Check if generate-grocery.js backend is running.</p>`;
             }
             if (groceryStatusTag) groceryStatusTag.textContent = "Error";
         } finally {
@@ -316,8 +273,8 @@ function updateActiveNavState(viewName) {
 function showView(viewName) {
     updateActiveNavState(viewName);
 
-    const panels = document.querySelectorAll('.view-panel');
-    panels.forEach(function(panel) {
+    for (let i = 0; i < viewPanels.length; i++) {
+        const panel = viewPanels[i];
         const isActive = panel.id === "view-" + viewName;
         if (isActive) {
             panel.classList.remove("hidden");
@@ -326,7 +283,7 @@ function showView(viewName) {
             panel.classList.add("hidden");
             panel.setAttribute("aria-hidden", "true");
         }
-    });
+    }
 
     if (mobileSidemenu) {
         mobileSidemenu.classList.add("hidden");
@@ -842,11 +799,11 @@ function addWorkoutEntry(dataObj) {
 
 document.addEventListener("click", function(event) {
     const trigger = event.target.closest("[data-view]");
-    if (trigger) {
-        event.preventDefault();
-        const viewName = trigger.getAttribute("data-view") || "dashboard";
-        showView(viewName);
-    }
+    if (!trigger) return;
+
+    event.preventDefault();
+    const viewName = trigger.getAttribute("data-view") || "dashboard";
+    showView(viewName);
 });
 
 updateActiveNavState("dashboard");

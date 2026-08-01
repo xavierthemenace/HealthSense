@@ -1,7 +1,17 @@
 {
+  "name": "healthsense",
+  "version": "1.0.0",
+  "description": "HealthSense API Backend",
+  "main": "api/generate-grocery.js",
+  "type": "module",
+  "scripts": {
+    "start": "node api/generate-grocery.js"
+  },
   "dependencies": {
     "@openrouter/sdk": "^1.1.21",
     "cors": "^2.8.6",
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "express": "^4.22.2",
+    "openai": "^4.104.0"
   }
 }
