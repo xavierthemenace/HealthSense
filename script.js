@@ -59,11 +59,13 @@ const openMealModalBtn = document.getElementById("open-meal-modal-btn");
 const openMealHistoryBtn = document.getElementById("open-meal-history-btn");
 const openDevMealModalBtn = document.getElementById("open-dev-meal-modal-btn");
 const closeMealModalBtn = document.getElementById("close-meal-modal-btn");
+const closeMealHistoryBtn = document.getElementById("close-meal-history-btn");
 const closeDevMealModalBtn = document.getElementById("close-dev-meal-modal-btn");
 const devMealForm = document.getElementById("dev-meal-form");
 
 const mbMenuToggle = document.getElementById("mbmenu");
 const mobileSidemenu = document.getElementById("mobile-sidemenu");
+const dashboardShell = document.getElementById("dashboard-shell");
 
 let userFitnessData = {
     hasCompletedSurvey: false,
@@ -101,7 +103,17 @@ const mealPresets = [
 ];
 
 function normalizeDate(d) {
-    const dateObj = new Date(d);
+    let dateObj;
+
+    if (d instanceof Date) {
+        dateObj = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    } else if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
+        const [year, month, day] = d.split("-").map(Number);
+        dateObj = new Date(year, month - 1, day);
+    } else {
+        dateObj = new Date(d);
+    }
+
     const y = dateObj.getFullYear();
     let m = String(dateObj.getMonth() + 1);
     if (m.length < 2) m = "0" + m;
@@ -141,7 +153,6 @@ if (groceryForm) {
         }
 
         try {
-            // Calls backend Express server running generate-grocery.js
             const response = await fetch("http://localhost:8080/api/generate-grocery", {
                 method: "POST",
                 headers: {
@@ -263,6 +274,7 @@ function renderWorkoutHistory() {
 }
 
 function updateActiveNavState(viewName) {
+    if (!dashboardShell) return;
     const targetView = viewName || "dashboard";
     document.querySelectorAll('[data-view]').forEach(function(trigger) {
         const triggerView = trigger.getAttribute("data-view") || "dashboard";
@@ -271,6 +283,7 @@ function updateActiveNavState(viewName) {
 }
 
 function showView(viewName) {
+    if (!dashboardShell) return;
     updateActiveNavState(viewName);
 
     for (let i = 0; i < viewPanels.length; i++) {
@@ -801,12 +814,16 @@ document.addEventListener("click", function(event) {
     const trigger = event.target.closest("[data-view]");
     if (!trigger) return;
 
+    const viewName = trigger.getAttribute("data-view");
+    if (!viewName) return;
+
     event.preventDefault();
-    const viewName = trigger.getAttribute("data-view") || "dashboard";
     showView(viewName);
 });
 
-updateActiveNavState("dashboard");
+if (dashboardShell) {
+    showView("dashboard");
+}
 
 const surveyForm = document.getElementById("survey-form");
 if (surveyForm) {
@@ -843,42 +860,57 @@ if (mealSurveyForm) {
 }
 
 if (workoutForm) {
-    workoutForm.addEventListener("submit", function(event) {
+    workoutForm.addEventListener("submit", async function(event) {
         event.preventDefault();
-        const focus = document.getElementById("workout-focus") ? document.getElementById("workout-focus").value : "strength";
-        const equipment = document.getElementById("equipment-select") ? document.getElementById("equipment-select").value : "dumbbells";
 
-        const routines = {
-            strength: {
-                dumbbells: ["Goblet Squats: 3 x 10", "Dumbbell Bench Press: 3 x 8", "Single-Arm Rows: 3 x 10", "Dumbbell Shoulder Press: 3 x 10"],
-                bodyweight: ["Push-ups: 3 x 12", "Bodyweight Squats: 3 x 15", "Walking Lunges: 3 x 10 per leg", "Plank Hold: 3 x 45s"],
-                yoga: ["Core Power Hold: 3 x 30s", "Bodyweight Glute Bridges: 3 x 15", "Bear Crawl Hold: 3 x 30s"]
-            },
-            cardio: {
-                dumbbells: ["Dumbbell Thrusters: 4 x 40s", "Renegade Rows: 4 x 40s", "Dumbbell Swing: 4 x 40s"],
-                bodyweight: ["Jumping Jacks: 4 x 45s", "High Knees: 4 x 45s", "Burpees: 4 x 30s", "Mountain Climbers: 4 x 45s"],
-                yoga: ["Sun Salutation Flow: 5 rounds", "Dynamic Runner Lunges: 3 x 10", "Jump Rope Skips (Shadow): 3 x 1 min"]
-            },
-            mobility: {
-                dumbbells: ["Light Goblet Squat Hold: 3 x 30s", "Halos: 3 x 8 per side", "RDL Stretch: 3 x 10"],
-                bodyweight: ["World's Greatest Stretch: 3 per side", "Cat-Cow Stretch: 10 reps", "90/90 Hip Switches: 8 per side"],
-                yoga: ["Downward-Facing Dog Hold: 3 x 45s", "Pigeon Pose: 1 min per side", "Child's Pose Flow: 2 mins"]
-            }
-        };
+        const description = document.getElementById("workout-description").value.trim();
+        const generateWorkoutBtn = document.getElementById("generate-workout-btn");
 
-        const list = (routines[focus] && routines[focus][equipment]) ? routines[focus][equipment] : routines.strength.bodyweight;
+        if (!description) return;
 
-        if (workoutTargetLabel) {
-            workoutTargetLabel.textContent = focus.toUpperCase() + " • " + equipment.toUpperCase();
+        if (generateWorkoutBtn) generateWorkoutBtn.disabled = true;
+        if (workoutOutput) {
+            workoutOutput.innerHTML = '<p><em>Generating tailored AI workout...</em></p>';
         }
 
-        if (workoutOutput) {
-            let routineHtml = "<h4>Custom Plan Details</h4><ul>";
-            for (let i = 0; i < list.length; i++) {
-                routineHtml += "<li>" + list[i] + "</li>";
+        try {
+            const response = await fetch("http://localhost:3000/api/generate-workout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    fitnessLevel: userFitnessData.primaryGoal || "General Fitness",
+                    goals: description,
+                    description: description
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server returned status ${response.status}`);
             }
-            routineHtml += "</ul>";
-            workoutOutput.innerHTML = routineHtml;
+
+            const data = await response.json();
+            const resultText = data.text || "No response text received.";
+
+            if (workoutOutput) {
+                const simpleText = (resultText || "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/^\s*[-*]\s+(.*$)/gim, '<li>$1</li>')
+                    .replace(/\n/g, '');
+
+                workoutOutput.innerHTML = '<ul class="feature-output-list">' + simpleText + '</ul>';
+            }
+        } catch (err) {
+            console.error("Error generating workout:", err);
+            if (workoutOutput) {
+                workoutOutput.innerHTML = `<p style="color:red;">Failed to generate workout. Check if your backend is running.</p>`;
+            }
+        } finally {
+            if (generateWorkoutBtn) generateWorkoutBtn.disabled = false;
         }
     });
 }
@@ -987,6 +1019,7 @@ if (openMealModalBtn) openMealModalBtn.addEventListener("click", openMealModal);
 if (openMealHistoryBtn) openMealHistoryBtn.addEventListener("click", openMealHistoryModal);
 if (openDevMealModalBtn) openDevMealModalBtn.addEventListener("click", openDevMealModal);
 if (closeMealModalBtn) closeMealModalBtn.addEventListener("click", closeMealModal);
+if (closeMealHistoryBtn) closeMealHistoryBtn.addEventListener("click", closeMealHistoryModal);
 if (closeDevMealModalBtn) closeDevMealModalBtn.addEventListener("click", closeDevMealModal);
 
 if (mealModal) {

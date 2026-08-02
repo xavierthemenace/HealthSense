@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HealthSense</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.boxicons.com/3.0.8/fonts/basic/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdn.boxicons.com/3.0.8/fonts/filled/boxicons-filled.min.css" rel="stylesheet">
+    <link href="https://cdn.boxicons.com/3.0.8/fonts/brands/boxicons-brands.min.css" rel="stylesheet">
 </head>
 <body>
-    <nav>
+    <nav class="site-nav">
         <h2>HealthSense</h2>
         <ul>
             <li><a href="index.html">Home</a></li>
@@ -15,7 +18,17 @@
             <li><a href="vision.html">Vision</a></li>
         </ul>
     </nav>
-    <div class="hero-section">
+    
+    <div class="mobile-menu">
+        <h3>HealthSense<i class="bx bx-menu" id="mbmenu" style="cursor:pointer;"></i></h3>
+        <ul class="sidemenu hidden" id="mobile-sidemenu">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="product.html">HealthSense</a></li>
+            <li><a href="vision.html">Vision</a></li>
+        </ul>
+    </div>
+
+    <div class="hero-section" style="min-height: 85vh; display: flex; align-items: center;">
         <div class="hero-content">
             <h1>Be able to give <span>one-hundred percent</span> 100% of the time.</h1>
             <p>Be your best self for <span>free.</span></p>

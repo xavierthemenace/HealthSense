@@ -194,24 +194,10 @@
 
                         <form id="workout-form" class="feature-form">
                             <label>
-                                Focus
-                                <select id="workout-focus" name="focus">
-                                    <option value="strength">Strength</option>
-                                    <option value="cardio">Cardio</option>
-                                    <option value="mobility">Mobility</option>
-                                </select>
+                                Workout Description
+                                <textarea id="workout-description" rows="3" placeholder="e.g. I want a 30-minute HIIT workout using dumbbells and a yoga mat..." required style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(0,0,0,0.12); font-family:var(--font-sans);"></textarea>
                             </label>
-
-                            <label>
-                                Equipment
-                                <select id="equipment-select" name="equipment">
-                                    <option value="dumbbells">Dumbbells</option>
-                                    <option value="bodyweight">Bodyweight</option>
-                                    <option value="yoga">Yoga mat</option>
-                                </select>
-                            </label>
-
-                            <button type="submit" class="cta-button" style="margin-top: 10px;">Build Workout</button>
+                            <button type="submit" class="cta-button" id="generate-workout-btn" style="margin-top: 10px;">Generate AI Workout</button>
                         </form>
                     </article>
 
@@ -224,7 +210,7 @@
                 </section>
 
                 <section class="dashboard-grid wide-grid">
-                    <article class="panel wide-panel-span-2">
+                    <article class="panel wide-panel-span-3">
                         <div class="panel-head">
                             <h2>Workout History</h2>
                             <span>Every logged session, including the dates you choose</span>
@@ -271,7 +257,7 @@
                     </article>
                 </section>
 
-                <section class="dashboard-grid wide-grid">
+                <section class="dashboard-grid two-col-grid">
                     <article class="panel">
                         <div class="panel-head">
                             <h2>Today's Intake</h2>
@@ -369,7 +355,6 @@
         </div>
     </div>
 
-    <!-- Modals -->
     <div class="modal-overlay hidden" id="survey-modal">
         <div class="modal-card">
             <h2>Welcome to Your Workout Setup</h2>
@@ -553,7 +538,7 @@
             <h2>Meal History</h2>
             <p>Review and edit meals you have already logged.</p>
             <ul id="meal-history-list" class="history-list" style="margin-top: 12px;"></ul>
-            <button class="ghost-button" type="button" onclick="closeMealHistoryModal()" style="margin-top:12px; width:100%;">Close</button>
+            <button class="ghost-button" type="button" id="close-meal-history-btn" style="margin-top:12px; width:100%;">Close</button>
         </div>
     </div>
 
