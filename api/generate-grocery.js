@@ -5,7 +5,11 @@ import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import multer from "multer";
 
+const upload = multer({
+    storage: multer.memoryStorage()
+});
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -125,7 +129,44 @@ app.post('/api/generate-workout', async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 8080;
+
+
+
+app.post("/api/scan-food", upload.single("image"), async (req, res) => {
+    try {
+        
+        if (!req.file) {
+            return res.status(400).json({ error: "No image uploaded." });
+        }
+
+        
+        const detectedFood = "test meal";
+        const confidence = 0.85; 
+
+        
+        const nutrition = {
+            calories: 450,
+            protein: 30,
+            carbs: 50,
+            fat: 15
+        };
+
+        
+        return res.json({
+            food: detectedFood,
+            confidence,
+            nutrition
+        });
+
+    } catch (err) {
+        console.error("Scan error:", err);
+        res.status(500).json({ error: "Failed to scan food image." });
+    }
+});
+
+
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
