@@ -54,6 +54,12 @@ const mealDailyFat = document.getElementById("meal-daily-fat");
 const mealDailyFatGoal = document.getElementById("meal-daily-fat-goal");
 const mealDailySummary = document.getElementById("meal-daily-summary");
 const mealYearlySummary = document.getElementById("meal-yearly-summary");
+const foodImageInput = document.getElementById("food-image-input");
+const scanFoodBtn = document.getElementById("scanner-submit");
+const foodScanOutput = document.getElementById("food-scan-output");
+const addScannedMealBtn = document.getElementById("add-scanned-meal-btn");
+const popup = document.getElementById("meal-added-popup");
+
 
 const openMealModalBtn = document.getElementById("open-meal-modal-btn");
 const openMealHistoryBtn = document.getElementById("open-meal-history-btn");
@@ -66,6 +72,20 @@ const devMealForm = document.getElementById("dev-meal-form");
 const mbMenuToggle = document.getElementById("mbmenu");
 const mobileSidemenu = document.getElementById("mobile-sidemenu");
 const dashboardShell = document.getElementById("dashboard-shell");
+const topNav = document.querySelector("nav.site-nav");
+
+function updateDashboardNavOnScroll() {
+    if (!topNav) return;
+
+    const currentScrollTop = window.scrollY || window.pageYOffset || 0;
+    if (currentScrollTop < 20) {
+        topNav.classList.remove("nav-hidden");
+        topNav.classList.add("nav-visible");
+    } else if (currentScrollTop > 80) {
+        topNav.classList.add("nav-hidden");
+        topNav.classList.remove("nav-visible");
+    }
+}
 
 let userFitnessData = {
     hasCompletedSurvey: false,
@@ -92,6 +112,8 @@ let userFitnessData = {
 };
 
 let activeMealId = null;
+
+let lastScannedMeal = null;
 
 const mealPresets = [
     { name: "Greek Yogurt Bowl", calories: 380, protein: 28, carbs: 42, fat: 14, notes: "High protein breakfast" },
@@ -1015,12 +1037,106 @@ if (logWorkoutForm) {
     });
 }
 
+if (scanFoodBtn) {
+    scanFoodBtn.addEventListener("click", async function (event) {
+        const file = foodImageInput?.files?.[0];
+        
+        if (!file) {
+            foodScanOutput.innerHTML = "<p style='color:red;'>Please select an image file to scan.</p>";
+            return;
+        }
+
+        scanFoodBtn.disabled = true;
+        foodScanOutput.innerHTML = "<p><em>Scanning food...</em></p>";
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            const response = await fetch("http://localhost:3000/api/scan-food", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server returned status ${response.status}`);
+            }
+
+            const data = await response.json();
+            foodScanOutput.innerHTML = [
+                `<strong>Food:</strong> ${data.food}<br>`,
+                `<strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%<br>`,
+                `<strong>Calories:</strong> ${data.nutrition.calories} kcal<br>`,
+                `<strong>Protein:</strong> ${data.nutrition.protein}g<br>`,
+                `<strong>Carbs:</strong> ${data.nutrition.carbs}g<br>`,
+                `<strong>Fat:</strong> ${data.nutrition.fat}g`
+            ].join("");
+
+            lastScannedMeal = data;
+            addScannedMealBtn.classList.remove("hidden")
+
+            
+
+        } catch (err) {
+            console.error("Food scan error:", err);
+            foodScanOutput.innerHTML = "<p style='color:red;'>Failed to scan food image.</p>";
+        } finally {
+            scanFoodBtn.disabled = false;
+        }
+    });
+}
+
 if (openMealModalBtn) openMealModalBtn.addEventListener("click", openMealModal);
 if (openMealHistoryBtn) openMealHistoryBtn.addEventListener("click", openMealHistoryModal);
 if (openDevMealModalBtn) openDevMealModalBtn.addEventListener("click", openDevMealModal);
 if (closeMealModalBtn) closeMealModalBtn.addEventListener("click", closeMealModal);
 if (closeMealHistoryBtn) closeMealHistoryBtn.addEventListener("click", closeMealHistoryModal);
 if (closeDevMealModalBtn) closeDevMealModalBtn.addEventListener("click", closeDevMealModal);
+
+function showMealAddedPopup() {
+    if (!popup) return;
+
+    popup.classList.remove("hidden");
+    popup.classList.add("show");
+
+    if (popup.hideTimeoutId) {
+        clearTimeout(popup.hideTimeoutId);
+    }
+
+    popup.hideTimeoutId = setTimeout(() => {
+        popup.classList.remove("show");
+        popup.classList.add("hidden");
+    }, 2500);
+}
+
+
+if (addScannedMealBtn) {
+    addScannedMealBtn.addEventListener("click", function () {
+        if (!lastScannedMeal) return;
+        const newMeal = {
+            id: Date.now(),
+            name: lastScannedMeal.food,
+            calories: lastScannedMeal.nutrition.calories,
+            protein: lastScannedMeal.nutrition.protein,
+            carbs: lastScannedMeal.nutrition.carbs,
+            fat: lastScannedMeal.nutrition.fat,
+            notes: "Scanned meal",
+            dateKey: normalizeDate(new Date())
+        }
+        userFitnessData.meals.push(newMeal)
+        userFitnessData.mealHistory.push(newMeal)
+
+        renderMealDashboard()
+        renderMealHistory()
+        renderDashboardSummaryCards()
+        updateDashboardStats()
+        showMealAddedPopup();
+
+   
+        addScannedMealBtn.classList.add("hidden");
+        lastScannedMeal = null;
+    })
+
+}
 
 if (mealModal) {
     mealModal.addEventListener("click", function(event) {
@@ -1088,4 +1204,8 @@ function checkScrollAnimations() {
 }
 
 window.addEventListener("scroll", checkScrollAnimations);
-window.addEventListener("DOMContentLoaded", checkScrollAnimations);
+window.addEventListener("scroll", updateDashboardNavOnScroll);
+window.addEventListener("DOMContentLoaded", function() {
+    checkScrollAnimations();
+    updateDashboardNavOnScroll();
+});

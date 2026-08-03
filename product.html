@@ -345,8 +345,18 @@
                         <div class="scanner-preview">
                             <div class="scanner-preview__camera" style="display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px;">
                                 <i class='bx bx-camera' style="font-size:3rem; color:var(--accent-sage);"></i>
-                                <p class="scanner-preview__text">Camera feed preview available in native application.</p>
+                                <p class="scanner-preview__text">Scan your food for nutrient information</p>
+                                <input type="file" id="food-image-input" accept="image/*">
+                                <button type="submit" id="scanner-submit" class="cta-button">Scan</button>
                             </div>
+                            
+                            <div id="food-scan-output" class="feature-output">
+                            <p>Upload an image and click scan</p>
+                            </div>
+                            <button id="add-scanned-meal-btn" class="cta-button hidden">
+                                Add to Meals
+                            </button>
+
                         </div>
                     </article>
                 </section>
@@ -580,6 +590,14 @@
             </form>
         </div>
     </div>
+
+    <div id="meal-added-popup" class="popup hidden">
+        <div class="popup-content">
+            <h3>Meal Added!</h3>
+            <p>Your scanned meal has been added to today’s log.</p>
+        </div>
+    </div>
+
 
     <footer class="site-footer">
         <p>© 2026 HealthSense. Built for better habits.</p>
