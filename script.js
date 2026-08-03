@@ -175,7 +175,7 @@ if (groceryForm) {
         }
 
         try {
-            const response = await fetch("http://localhost:8080/api/generate-grocery", {
+            const response = await fetch("http://localhost:3000/api/generate-grocery", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -1039,6 +1039,8 @@ if (logWorkoutForm) {
 
 if (scanFoodBtn) {
     scanFoodBtn.addEventListener("click", async function (event) {
+        event.preventDefault(); // Stop default button action / form submission
+        
         const file = foodImageInput?.files?.[0];
         
         if (!file) {
@@ -1072,13 +1074,11 @@ if (scanFoodBtn) {
             ].join("");
 
             lastScannedMeal = data;
-            addScannedMealBtn.classList.remove("hidden")
-
-            
+            addScannedMealBtn.classList.remove("hidden");
 
         } catch (err) {
             console.error("Food scan error:", err);
-            foodScanOutput.innerHTML = "<p style='color:red;'>Failed to scan food image.</p>";
+            foodScanOutput.innerHTML = "<p style='color:red;'>Failed to scan food image. Make sure backend is running on port 3000.</p>";
         } finally {
             scanFoodBtn.disabled = false;
         }

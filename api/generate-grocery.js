@@ -24,17 +24,9 @@ if (!apiKey) {
 
 const app = express();
 
-const corsOptions = {
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-    optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.use(cors());
 app.use(express.json());
+
 
 const openai = new OpenAI({
     baseURL: 'https://openrouter.ai/api/v1',
