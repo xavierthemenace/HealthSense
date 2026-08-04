@@ -74,6 +74,14 @@ const mobileSidemenu = document.getElementById("mobile-sidemenu");
 const dashboardShell = document.getElementById("dashboard-shell");
 const topNav = document.querySelector("nav.site-nav");
 
+function getApiUrl(path) {
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    if (typeof window === "undefined" || window.location.protocol === "file:") {
+        return `http://127.0.0.1:3000${normalizedPath}`;
+    }
+    return `${window.location.origin}${normalizedPath}`;
+}
+
 function updateDashboardNavOnScroll() {
     if (!topNav) return;
 
@@ -175,7 +183,7 @@ if (groceryForm) {
         }
 
         try {
-            const response = await fetch("/api/generate-grocery", {
+            const response = await fetch(getApiUrl("/api/generate-grocery"), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -896,7 +904,7 @@ if (workoutForm) {
         }
 
         try {
-            const response = await fetch("/api/generate-workout", {
+            const response = await fetch(getApiUrl("/api/generate-workout"), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -1054,7 +1062,7 @@ if (scanFoodBtn) {
         formData.append("image", file);
 
         try {
-            const response = await fetch("/api/scan-food", {
+            const response = await fetch(getApiUrl("/api/scan-food"), {
                 method: "POST",
                 body: formData
             });

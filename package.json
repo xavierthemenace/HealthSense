@@ -2,9 +2,10 @@
   "name": "healthsense",
   "version": "1.0.0",
   "description": "HealthSense Web Application",
-  "main": "server.js",
+  "type": "module",
+  "main": "api/generate-grocery.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node api/generate-grocery.js"
   },
   "dependencies": {
     "@google-cloud/vision": "^5.3.7",
