@@ -37,7 +37,7 @@ const openai = new OpenAI({
     }
 });
 
-app.post('/api/generate-grocery', async (req, res) => {
+app.post('/', async (req, res) => {
     try {
         if (!process.env.OPENROUTER_API_KEY) {
             return res.status(500).json({ error: "Server misconfiguration: OPENROUTER_API_KEY is not set in .env" });
@@ -72,7 +72,7 @@ app.post('/api/generate-grocery', async (req, res) => {
     }
 });
 
-app.post('/api/generate-workout', async (req, res) => {
+app.post('/', async (req, res) => {
     try {
         if (!process.env.OPENROUTER_API_KEY) {
             return res.status(500).json({ error: "Server misconfiguration: OPENROUTER_API_KEY is not set in .env" });
@@ -124,7 +124,7 @@ app.post('/api/generate-workout', async (req, res) => {
 
 
 
-app.post("/api/scan-food", upload.single("image"), async (req, res) => {
+app.post("/", upload.single("image"), async (req, res) => {
     try {
         
         if (!req.file) {

@@ -175,7 +175,7 @@ if (groceryForm) {
         }
 
         try {
-            const response = await fetch("http://localhost:3000/api/generate-grocery", {
+            const response = await fetch("/api/generate-grocery", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -896,7 +896,7 @@ if (workoutForm) {
         }
 
         try {
-            const response = await fetch("http://localhost:3000/api/generate-workout", {
+            const response = await fetch("/api/generate-workout", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -1054,7 +1054,7 @@ if (scanFoodBtn) {
         formData.append("image", file);
 
         try {
-            const response = await fetch("http://localhost:3000/api/scan-food", {
+            const response = await fetch("/api/scan-food", {
                 method: "POST",
                 body: formData
             });
