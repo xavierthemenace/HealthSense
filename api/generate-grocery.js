@@ -21,7 +21,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '..')));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'grocery-api' });
@@ -169,17 +169,6 @@ app.post('/api/scan-food', upload.single('image'), async (req, res) => {
     console.error('Scan API Error:', error?.message || error);
     return res.status(500).json({ error: 'Failed to scan food image.' });
   }
-});
-
-app.get('/', (_req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'index.html'));
-});
-
-app.get('*', (req, res) => {
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'Not found' });
-  }
-  res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 const isDirectRun = process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url;
