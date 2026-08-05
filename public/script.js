@@ -1047,7 +1047,7 @@ if (logWorkoutForm) {
 
 if (scanFoodBtn) {
     scanFoodBtn.addEventListener("click", async function (event) {
-        event.preventDefault(); // Stop default button action / form submission
+        event.preventDefault(); 
         
         const file = foodImageInput?.files?.[0];
         
