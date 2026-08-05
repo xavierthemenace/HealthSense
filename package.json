@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "HealthSense Web Application",
   "type": "module",
+  "main": "index.js",
   "scripts": {
   },
   "dependencies": {
