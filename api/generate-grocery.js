@@ -189,5 +189,5 @@ if (isDirectRun) {
     console.log(`Server running on http://${HOST}:${PORT}`);
   });
 }
-module.exports = app;
+
 export default app;
