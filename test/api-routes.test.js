@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import { once } from 'node:events';
 
-test('grocery route returns a real AI error when no key is configured', async () => {
+test('grocery route returns a usable fallback response when no AI key is configured', async () => {
   process.env.NODE_ENV = 'test';
   delete process.env.OPENROUTER_API_KEY;
   delete process.env.OPENAI_API_KEY;
@@ -22,10 +22,11 @@ test('grocery route returns a real AI error when no key is configured', async ()
       body: JSON.stringify({ nutrients: 'protein, iron', goals: 'build muscle' }),
     });
 
-    assert.equal(response.status, 500);
+    assert.equal(response.status, 200);
     const data = await response.json();
-    assert.ok(data.error, 'expected an error message');
-    assert.match(data.error, /AI|configure|key|server/i);
+    assert.ok(data.text, 'expected a generated response');
+    assert.match(data.text, /Protein|Produce|Pantry/i);
+    assert.equal(data.source, 'fallback');
   } finally {
     server.close();
     await once(server, 'close').catch(() => {});

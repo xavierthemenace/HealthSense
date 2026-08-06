@@ -23,7 +23,16 @@ const HOST = process.env.HOST || '127.0.0.1';
 const model = process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || 'openai/gpt-4o-mini';
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.options('*', cors({
+  origin: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -51,6 +60,61 @@ function createOpenAIClient() {
       'X-Title': 'HealthSense App',
     },
   });
+}
+
+function buildFallbackGroceryText(nutrients, goals) {
+  const nutrientItems = String(nutrients || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const goalItems = String(goals || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const focusSummary = nutrientItems.length > 0
+    ? `Focus on ${nutrientItems.join(', ')}.`
+    : 'Focus on balanced everyday nutrition.';
+  const goalSummary = goalItems.length > 0
+    ? `These picks support ${goalItems.join(', ')}.`
+    : 'These picks support your broader wellness goals.';
+
+  return [
+    'Here is a practical starter grocery list:',
+    '',
+    'Proteins',
+    '- Chicken breast or tofu',
+    '- Greek yogurt or cottage cheese',
+    '- Eggs',
+    '',
+    'Complex Carbs',
+    '- Brown rice or quinoa',
+    '- Oats',
+    '- Sweet potatoes',
+    '',
+    'Healthy Fats',
+    '- Avocado',
+    '- Olive oil',
+    '- Nuts or seeds',
+    '',
+    'Produce',
+    '- Spinach',
+    '- Broccoli',
+    '- Bell peppers',
+    '- Berries or apples',
+    '',
+    'Pantry',
+    '- Beans or lentils',
+    '- Whole grain bread',
+    '- Low-sodium broth',
+    '',
+    'Extras',
+    '- Herbal tea or water bottles',
+    '- Protein powder if needed',
+    '',
+    focusSummary,
+    goalSummary,
+  ].join('\n');
 }
 
 async function generateTextWithFallback(promptText) {
@@ -90,9 +154,15 @@ Goals: ${goals}
 Return the response as clear sections with bullet points. Use categories such as Proteins, Complex Carbs, Healthy Fats, Produce, Pantry, and Extras. Keep it practical and easy to shop from.
 `;
 
-    const textResponse = await generateTextWithFallback(promptText);
+    let textResponse;
 
-    return res.json({ text: textResponse, source: 'ai' });
+    try {
+      textResponse = await generateTextWithFallback(promptText);
+      return res.json({ text: textResponse, source: 'ai' });
+    } catch (error) {
+      console.warn('Falling back to built-in grocery list due to AI error:', error?.message || error);
+      return res.json({ text: buildFallbackGroceryText(nutrients, goals), source: 'fallback' });
+    }
   } catch (error) {
     console.error('OpenRouter API Error:', error?.response?.data || error?.message || error);
     const message = error?.message || 'Failed to communicate with AI server';
