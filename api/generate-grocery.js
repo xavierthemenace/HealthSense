@@ -6,16 +6,21 @@ import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '..');
+
+const shouldLoadDotenv = process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test';
+
+if (shouldLoadDotenv) {
+  dotenv.config({ path: path.resolve(projectRoot, '.env') });
+  dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+}
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || '127.0.0.1';
-const apiKey = process.env.OPENROUTER_API_KEY;
-const model = process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini';
+const model = process.env.OPENROUTER_MODEL || process.env.OPENAI_MODEL || 'openai/gpt-4o-mini';
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
@@ -24,26 +29,51 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'grocery-api' });
+  res.json({
+    ok: true,
+    service: 'grocery-api',
+    aiConfigured: Boolean(process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY),
+  });
 });
 
-const openai = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: apiKey || 'missing-key-placeholder',
-  defaultHeaders: {
-    'HTTP-Referer': 'http://localhost:3000',
-    'X-Title': 'HealthSense App',
-  },
-});
+function createOpenAIClient() {
+  const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+
+  if (!apiKey || !String(apiKey).trim()) {
+    throw new Error('No AI provider configured. Set OPENROUTER_API_KEY or OPENAI_API_KEY.');
+  }
+
+  return new OpenAI({
+    baseURL: process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1',
+    apiKey,
+    defaultHeaders: {
+      'HTTP-Referer': process.env.APP_URL || 'http://localhost:3000',
+      'X-Title': 'HealthSense App',
+    },
+  });
+}
+
+async function generateTextWithFallback(promptText) {
+  const openai = createOpenAIClient();
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model,
+      messages: [{ role: 'user', content: promptText }],
+    });
+
+    const content = completion?.choices?.[0]?.message?.content;
+    return Array.isArray(content)
+      ? content.map((part) => part?.text || '').join('')
+      : content;
+  } catch (error) {
+    console.error('AI generation failed:', error?.message || error);
+    throw error;
+  }
+}
 
 app.post('/api/generate-grocery', async (req, res) => {
   try {
-    if (!apiKey) {
-      return res.status(500).json({
-        error: 'Server misconfiguration: OPENROUTER_API_KEY is not set in .env',
-      });
-    }
-
     const { nutrients, goals } = req.body || {};
 
     if (!nutrients || !goals) {
@@ -60,34 +90,21 @@ Goals: ${goals}
 Return the response as clear sections with bullet points. Use categories such as Proteins, Complex Carbs, Healthy Fats, Produce, Pantry, and Extras. Keep it practical and easy to shop from.
 `;
 
-    const completion = await openai.chat.completions.create({
-      model,
-      messages: [{ role: 'user', content: promptText }],
-    });
+    const textResponse = await generateTextWithFallback(promptText);
 
-    const content = completion?.choices?.[0]?.message?.content;
-    const textResponse = Array.isArray(content)
-      ? content.map((part) => part?.text || '').join('')
-      : content || 'No content returned from AI.';
-
-    return res.json({ text: textResponse });
+    return res.json({ text: textResponse, source: 'ai' });
   } catch (error) {
     console.error('OpenRouter API Error:', error?.response?.data || error?.message || error);
+    const message = error?.message || 'Failed to communicate with AI server';
     return res.status(500).json({
-      error: 'Failed to communicate with AI server',
-      details: error?.message || 'Internal Server Error',
+      error: message,
+      details: error?.response?.data?.error?.message || error?.response?.data?.message || null,
     });
   }
 });
 
 app.post('/api/generate-workout', async (req, res) => {
   try {
-    if (!apiKey) {
-      return res.status(500).json({
-        error: 'Server misconfiguration: OPENROUTER_API_KEY is not set in .env',
-      });
-    }
-
     const { fitnessLevel, goals, description, daysPerWeek } = req.body || {};
     const userGoal = goals || description || 'General fitness and strength';
     const level = fitnessLevel || 'Intermediate';
@@ -104,22 +121,15 @@ Details: ${description || userGoal}
 Return a simple bullet list. Each bullet should include the exercise name, sets/reps, and a short tip. Keep it safe and practical.
 `;
 
-    const completion = await openai.chat.completions.create({
-      model,
-      messages: [{ role: 'user', content: promptText }],
-    });
+    const textResponse = await generateTextWithFallback(promptText);
 
-    const content = completion?.choices?.[0]?.message?.content;
-    const textResponse = Array.isArray(content)
-      ? content.map((part) => part?.text || '').join('')
-      : content || 'No content returned from AI.';
-
-    return res.json({ text: textResponse });
+    return res.json({ text: textResponse, source: 'ai' });
   } catch (error) {
     console.error('Workout API Error:', error?.response?.data || error?.message || error);
+    const message = error?.message || 'Failed to generate workout';
     return res.status(500).json({
-      error: 'Failed to generate workout',
-      details: error?.message || 'Internal Server Error',
+      error: message,
+      details: error?.response?.data?.error?.message || error?.response?.data?.message || null,
     });
   }
 });

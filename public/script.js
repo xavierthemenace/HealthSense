@@ -194,11 +194,12 @@ if (groceryForm) {
                 })
             });
 
+            const data = await response.json().catch(() => ({}));
+
             if (!response.ok) {
-                throw new Error(`Server returned status ${response.status}`);
+                throw new Error(data.error || data.details || `Server returned status ${response.status}`);
             }
 
-            const data = await response.json();
             const resultText = data.text || "No response text received.";
 
             if (groceryOutput) {
@@ -215,7 +216,7 @@ if (groceryForm) {
         } catch (err) {
             console.error("Error generating grocery list:", err);
             if (groceryOutput) {
-                groceryOutput.innerHTML = `<p style="color:red;">Failed to generate grocery list. Check if generate-grocery.js backend is running.</p>`;
+                groceryOutput.innerHTML = `<p style="color:red;">${err.message || "Failed to generate grocery list."}</p>`;
             }
             if (groceryStatusTag) groceryStatusTag.textContent = "Error";
         } finally {
@@ -916,11 +917,12 @@ if (workoutForm) {
                 })
             });
 
+            const data = await response.json().catch(() => ({}));
+
             if (!response.ok) {
-                throw new Error(`Server returned status ${response.status}`);
+                throw new Error(data.error || data.details || `Server returned status ${response.status}`);
             }
 
-            const data = await response.json();
             const resultText = data.text || "No response text received.";
 
             if (workoutOutput) {
@@ -937,7 +939,7 @@ if (workoutForm) {
         } catch (err) {
             console.error("Error generating workout:", err);
             if (workoutOutput) {
-                workoutOutput.innerHTML = `<p style="color:red;">Failed to generate workout. Check if your backend is running.</p>`;
+                workoutOutput.innerHTML = `<p style="color:red;">${err.message || "Failed to generate workout."}</p>`;
             }
         } finally {
             if (generateWorkoutBtn) generateWorkoutBtn.disabled = false;
