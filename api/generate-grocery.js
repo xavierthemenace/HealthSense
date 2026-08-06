@@ -41,6 +41,7 @@ const openai = new OpenAI({
     'HTTP-Referer': siteOrigin,
     'X-Title': 'HealthSense App',
   },
+  timeout: 20000,
 });
 
 function sendAiError(res, statusCode, message, details) {
@@ -49,6 +50,25 @@ function sendAiError(res, statusCode, message, details) {
     details,
     hint: 'Make sure OPENROUTER_API_KEY is set in Vercel and that the deployment was redeployed after the change.',
   });
+}
+
+async function callOpenRouter(promptText, label) {
+  if (!apiKey) {
+    throw new Error('OPENROUTER_API_KEY is not available to the deployed server.');
+  }
+
+  const completion = await Promise.race([
+    openai.chat.completions.create({
+      model,
+      messages: [{ role: 'user', content: promptText }],
+    }),
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} request timed out after 20 seconds.`)), 20000)),
+  ]);
+
+  const content = completion?.choices?.[0]?.message?.content;
+  return Array.isArray(content)
+    ? content.map((part) => part?.text || '').join('')
+    : content || 'No content returned from AI.';
 }
 
 app.post('/api/generate-grocery', async (req, res) => {
@@ -73,16 +93,7 @@ Goals: ${goals}
 Return the response as clear sections with bullet points. Use categories such as Proteins, Complex Carbs, Healthy Fats, Produce, Pantry, and Extras. Keep it practical and easy to shop from.
 `;
 
-    const completion = await openai.chat.completions.create({
-      model,
-      messages: [{ role: 'user', content: promptText }],
-    });
-
-    const content = completion?.choices?.[0]?.message?.content;
-    const textResponse = Array.isArray(content)
-      ? content.map((part) => part?.text || '').join('')
-      : content || 'No content returned from AI.';
-
+    const textResponse = await callOpenRouter(promptText, 'Grocery generation');
     return res.json({ text: textResponse });
   } catch (error) {
     console.error('OpenRouter API Error:', error?.response?.data || error?.message || error);
@@ -113,16 +124,7 @@ Details: ${description || userGoal}
 Return a simple bullet list. Each bullet should include the exercise name, sets/reps, and a short tip. Keep it safe and practical.
 `;
 
-    const completion = await openai.chat.completions.create({
-      model,
-      messages: [{ role: 'user', content: promptText }],
-    });
-
-    const content = completion?.choices?.[0]?.message?.content;
-    const textResponse = Array.isArray(content)
-      ? content.map((part) => part?.text || '').join('')
-      : content || 'No content returned from AI.';
-
+    const textResponse = await callOpenRouter(promptText, 'Workout generation');
     return res.json({ text: textResponse });
   } catch (error) {
     console.error('Workout API Error:', error?.response?.data || error?.message || error);
