@@ -14,9 +14,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || '127.0.0.1';
-const apiKey = process.env.OPENROUTER_API_KEY;
+const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
 const model = process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini';
 const upload = multer({ storage: multer.memoryStorage() });
+const siteOrigin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
 
 app.use(cors());
 app.use(express.json());
@@ -24,24 +25,36 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'grocery-api' });
+  res.json({
+    ok: true,
+    service: 'grocery-api',
+    apiConfigured: Boolean(apiKey),
+    model,
+    siteOrigin,
+  });
 });
 
 const openai = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: apiKey || 'missing-key-placeholder',
   defaultHeaders: {
-    'HTTP-Referer': 'http://localhost:3000',
+    'HTTP-Referer': siteOrigin,
     'X-Title': 'HealthSense App',
   },
 });
 
+function sendAiError(res, statusCode, message, details) {
+  return res.status(statusCode).json({
+    error: message,
+    details,
+    hint: 'Make sure OPENROUTER_API_KEY is set in Vercel and that the deployment was redeployed after the change.',
+  });
+}
+
 app.post('/api/generate-grocery', async (req, res) => {
   try {
     if (!apiKey) {
-      return res.status(500).json({
-        error: 'Server misconfiguration: OPENROUTER_API_KEY is not set in .env',
-      });
+      return sendAiError(res, 500, 'AI generation is not configured.', 'OPENROUTER_API_KEY is not available to the deployed server.');
     }
 
     const { nutrients, goals } = req.body || {};
@@ -73,19 +86,15 @@ Return the response as clear sections with bullet points. Use categories such as
     return res.json({ text: textResponse });
   } catch (error) {
     console.error('OpenRouter API Error:', error?.response?.data || error?.message || error);
-    return res.status(500).json({
-      error: 'Failed to communicate with AI server',
-      details: error?.message || 'Internal Server Error',
-    });
+    const message = error?.response?.data?.error?.message || error?.message || 'Unknown error while communicating with the AI service.';
+    return sendAiError(res, 502, 'Failed to communicate with the AI service.', message);
   }
 });
 
 app.post('/api/generate-workout', async (req, res) => {
   try {
     if (!apiKey) {
-      return res.status(500).json({
-        error: 'Server misconfiguration: OPENROUTER_API_KEY is not set in .env',
-      });
+      return sendAiError(res, 500, 'Workout generation is not configured.', 'OPENROUTER_API_KEY is not available to the deployed server.');
     }
 
     const { fitnessLevel, goals, description, daysPerWeek } = req.body || {};
@@ -117,10 +126,8 @@ Return a simple bullet list. Each bullet should include the exercise name, sets/
     return res.json({ text: textResponse });
   } catch (error) {
     console.error('Workout API Error:', error?.response?.data || error?.message || error);
-    return res.status(500).json({
-      error: 'Failed to generate workout',
-      details: error?.message || 'Internal Server Error',
-    });
+    const message = error?.response?.data?.error?.message || error?.message || 'Unknown error while generating the workout.';
+    return sendAiError(res, 502, 'Failed to generate the workout.', message);
   }
 });
 

@@ -82,6 +82,21 @@ function getApiUrl(path) {
     return `${window.location.origin}${normalizedPath}`;
 }
 
+async function getApiErrorMessage(response, fallbackMessage) {
+    try {
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+            const data = await response.json();
+            return data.error || data.details || fallbackMessage;
+        }
+
+        const text = await response.text();
+        return text || fallbackMessage;
+    } catch (err) {
+        return fallbackMessage;
+    }
+}
+
 function updateDashboardNavOnScroll() {
     if (!topNav) return;
 
@@ -215,7 +230,7 @@ if (groceryForm) {
         } catch (err) {
             console.error("Error generating grocery list:", err);
             if (groceryOutput) {
-                groceryOutput.innerHTML = `<p style="color:red;">Failed to generate grocery list. Check if generate-grocery.js backend is running.</p>`;
+                groceryOutput.innerHTML = `<p style="color:red;">${err.message || "Failed to generate grocery list."}</p>`;
             }
             if (groceryStatusTag) groceryStatusTag.textContent = "Error";
         } finally {
@@ -917,7 +932,8 @@ if (workoutForm) {
             });
 
             if (!response.ok) {
-                throw new Error(`Server returned status ${response.status}`);
+                const errorMessage = await getApiErrorMessage(response, "The AI service returned an error.");
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -937,7 +953,7 @@ if (workoutForm) {
         } catch (err) {
             console.error("Error generating workout:", err);
             if (workoutOutput) {
-                workoutOutput.innerHTML = `<p style="color:red;">Failed to generate workout. Check if your backend is running.</p>`;
+                workoutOutput.innerHTML = `<p style="color:red;">${err.message || "Failed to generate workout."}</p>`;
             }
         } finally {
             if (generateWorkoutBtn) generateWorkoutBtn.disabled = false;
@@ -1068,7 +1084,8 @@ if (scanFoodBtn) {
             });
 
             if (!response.ok) {
-                throw new Error(`Server returned status ${response.status}`);
+                const errorMessage = await getApiErrorMessage(response, "The AI service returned an error.");
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -1086,7 +1103,7 @@ if (scanFoodBtn) {
 
         } catch (err) {
             console.error("Food scan error:", err);
-            foodScanOutput.innerHTML = "<p style='color:red;'>Failed to scan food image. Make sure backend is running on port 3000.</p>";
+            foodScanOutput.innerHTML = `<p style='color:red;'>${err.message || "Failed to scan food image."}</p>`;
         } finally {
             scanFoodBtn.disabled = false;
         }
