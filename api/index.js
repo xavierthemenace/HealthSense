@@ -1,62 +1,57 @@
-import serverless from 'serverless-http';
-import app from './generate-grocery.js';
-import config from '../config.js'; 
+import express from 'express';
+import cors from 'cors';
 
-export default async function handler(req, res) {
-    // Set CORS headers
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
+const app = express();
 
-    // Handle preflight OPTIONS request
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
+app.use(cors());
+app.use(express.json());
+
+app.post('/api/generate-workout', async (req, res) => {
+  try {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'OPENROUTER_API_KEY is not configured on the server.' });
     }
 
-    // Parse path to route requests correctly
-    const url = req.url;
+    const { fitnessLevel, goals, description } = req.body;
 
-    try {
-        if (url.includes('/api/generate-workout')) {
-            const { description, fitnessLevel, goals } = req.body || {};
+    const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://health-sense.vercel.app", // Optional site url for OpenRouter rankings
+        "X-Title": "HealthSense" // Optional site title
+      },
+      body: JSON.stringify({
+        model: "openrouter/free", // Or another preferred OpenRouter model ID
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert fitness coach. Create detailed, structured workout routines."
+          },
+          {
+            role: "user",
+            content: `Create a workout plan for someone with fitness level: ${fitnessLevel}. Goals/Equipment: ${goals || description}`
+          }
+        ]
+      })
+    });
 
-            // Example call to OpenRouter API
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "openai/gpt-3.5-turbo",
-                    messages: [
-                        { role: "system", content: "You are a helpful workout generator." },
-                        { role: "user", content: `Fitness level: ${fitnessLevel}. Goals/Description: ${description || goals}` }
-                    ]
-                })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.text();
-                return res.status(response.status).json({ error: "OpenRouter API error", details: errorData });
-            }
-
-            const data = await response.json();
-            const textResult = data.choices?.[0]?.message?.content || "No workout generated.";
-
-            return res.status(200).json({ text: textResult });
-        }
-
-        return res.status(404).json({ error: "Endpoint not found" });
-    } catch (err) {
-        console.error("API Error:", err);
-        return res.status(500).json({ error: err.message || "Internal Server Error" });
+    if (!openRouterResponse.ok) {
+      const errorText = await openRouterResponse.text();
+      console.error("OpenRouter Error Response:", errorText);
+      return res.status(500).json({ error: `OpenRouter API failed with status ${openRouterResponse.status}` });
     }
-}
 
-export default serverless(app);
+    const data = await openRouterResponse.json();
+    const resultText = data.choices?.[0]?.message?.content || "No workout routine generated.";
+
+    return res.status(200).json({ text: resultText });
+  } catch (err) {
+    console.error("Server endpoint error:", err);
+    return res.status(500).json({ error: err.message || "Internal server error" });
+  }
+});
+
+export default app;
