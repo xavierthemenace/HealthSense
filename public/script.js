@@ -76,10 +76,12 @@ const topNav = document.querySelector("nav.site-nav");
 
 function getApiUrl(path) {
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-    if (typeof window === "undefined" || window.location.protocol === "file:") {
+    // If running directly from filesystem locally:
+    if (typeof window !== "undefined" && window.location.protocol === "file:") {
         return `http://127.0.0.1:3000${normalizedPath}`;
     }
-    return `${window.location.origin}${normalizedPath}`;
+    // Relative URL works seamlessly both on Vercel and local dev servers
+    return normalizedPath;
 }
 
 // Alias getAPIUrl to getApiUrl and attach both to global scope
