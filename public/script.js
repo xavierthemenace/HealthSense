@@ -74,6 +74,20 @@ const mobileSidemenu = document.getElementById("mobile-sidemenu");
 const dashboardShell = document.getElementById("dashboard-shell");
 const topNav = document.querySelector("nav.site-nav");
 
+function getApiUrl(path) {
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    if (typeof window === "undefined" || window.location.protocol === "file:") {
+        return `http://127.0.0.1:3000${normalizedPath}`;
+    }
+    return `${window.location.origin}${normalizedPath}`;
+}
+
+// Alias getAPIUrl to getApiUrl and attach both to global scope
+const getAPIUrl = getApiUrl;
+if (typeof window !== "undefined") {
+    window.getApiUrl = getApiUrl;
+    window.getAPIUrl = getApiUrl;
+}
 
 function updateDashboardNavOnScroll() {
     if (!topNav) return;
