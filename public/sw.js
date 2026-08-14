@@ -11,7 +11,14 @@ self.addEventListener('fetch', event => {
   const target = `${API_ORIGIN}${apiPath}${url.search}`;
 
   event.respondWith(
-    fetch(new Request(target, event.request)).catch(error =>
+    fetch(new Request(target, {
+      method: event.request.method,
+      headers: event.request.headers,
+      body: ['GET', 'HEAD'].includes(event.request.method) ? undefined : event.request.body,
+      mode: 'cors',
+      credentials: 'omit',
+      redirect: event.request.redirect,
+    })).catch(error =>
       new Response(JSON.stringify({ error: 'HealthSense API backend is unavailable.', details: error?.message || 'Unknown proxy error' }), {
         status: 503,
         headers: { 'Content-Type': 'application/json' }
