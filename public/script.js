@@ -76,10 +76,19 @@ const topNav = document.querySelector("nav.site-nav");
 
 function getApiUrl(path) {
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-    if (typeof window === "undefined" || window.location.protocol === "file:") {
+    // If running directly from filesystem locally:
+    if (typeof window !== "undefined" && window.location.protocol === "file:") {
         return `http://127.0.0.1:3000${normalizedPath}`;
     }
-    return `${window.location.origin}${normalizedPath}`;
+    // Relative URL works seamlessly both on Vercel and local dev servers
+    return normalizedPath;
+}
+
+// Alias getAPIUrl to getApiUrl and attach both to global scope
+const getAPIUrl = getApiUrl;
+if (typeof window !== "undefined") {
+    window.getApiUrl = getApiUrl;
+    window.getAPIUrl = getApiUrl;
 }
 
 async function getApiErrorMessage(response, fallbackMessage) {
@@ -209,11 +218,12 @@ if (groceryForm) {
                 })
             });
 
+            const data = await response.json().catch(() => ({}));
+
             if (!response.ok) {
-                throw new Error(`Server returned status ${response.status}`);
+                throw new Error(data.error || data.details || `Server returned status ${response.status}`);
             }
 
-            const data = await response.json();
             const resultText = data.text || "No response text received.";
 
             if (groceryOutput) {
@@ -931,12 +941,12 @@ if (workoutForm) {
                 })
             });
 
+            const data = await response.json().catch(() => ({}));
+
             if (!response.ok) {
-                const errorMessage = await getApiErrorMessage(response, "The AI service returned an error.");
-                throw new Error(errorMessage);
+                throw new Error(`Server returned status ${response.status}`);
             }
 
-            const data = await response.json();
             const resultText = data.text || "No response text received.";
 
             if (workoutOutput) {
