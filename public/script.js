@@ -74,14 +74,19 @@ const mobileSidemenu = document.getElementById("mobile-sidemenu");
 const dashboardShell = document.getElementById("dashboard-shell");
 const topNav = document.querySelector("nav.site-nav");
 
+const REMOTE_API_BASE = "https://health-sense-xi.vercel.app";
+
 function getApiUrl(path) {
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
     // If running directly from filesystem locally:
     if (typeof window !== "undefined" && window.location.protocol === "file:") {
         return `http://127.0.0.1:3000${normalizedPath}`;
     }
-    // Relative URL works seamlessly both on Vercel and local dev servers
-    return normalizedPath;
+    const host = typeof window !== "undefined" ? window.location.hostname : "";
+    if (host === "localhost" || host === "127.0.0.1" || host.endsWith(".vercel.app")) {
+        return normalizedPath;
+    }
+    return REMOTE_API_BASE + normalizedPath;
 }
 
 // Alias getAPIUrl to getApiUrl and attach both to global scope
@@ -104,6 +109,50 @@ async function getApiErrorMessage(response, fallbackMessage) {
     } catch (err) {
         return fallbackMessage;
     }
+}
+
+function escapeHtml(value) {
+    return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+async function requestPlan(path, payload) {
+    let response;
+    try {
+        response = await fetch(getApiUrl(path), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+    } catch (err) {
+        throw new Error("Couldn't reach the HealthSense AI server. Check your connection and try again.");
+    }
+
+    if (!response.ok) {
+        throw new Error(await getApiErrorMessage(response, `Server returned status ${response.status}`));
+    }
+    return response.json();
+}
+
+function renderPlan(container, plan) {
+    if (!container) return;
+    let html = "";
+    if (plan.summary) {
+        html += '<p class="plan-summary">' + escapeHtml(plan.summary) + '</p>';
+    }
+    (plan.sections || []).forEach(function(section) {
+        html += '<h3 class="plan-section-title">' + escapeHtml(section.title) + '</h3><ul class="plan-list">';
+        section.items.forEach(function(item) {
+            html += '<li class="plan-item"><strong>' + escapeHtml(item.name) + '</strong>' +
+                (item.detail ? ' <span class="plan-detail">' + escapeHtml(item.detail) + '</span>' : '') +
+                '<p class="plan-why"><span>Why:</span> ' + escapeHtml(item.why) + '</p></li>';
+        });
+        html += '</ul>';
+    });
+    container.innerHTML = html || "<p>No plan was generated. Try adding more detail.</p>";
 }
 
 function updateDashboardNavOnScroll() {
@@ -207,40 +256,14 @@ if (groceryForm) {
         }
 
         try {
-            const response = await fetch(getApiUrl("/api/generate-grocery"), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    nutrients: nutrients,
-                    goals: goals
-                })
-            });
+            const plan = await requestPlan("/api/generate-grocery", { nutrients: nutrients, goals: goals });
 
-            const data = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                throw new Error(data.error || data.details || `Server returned status ${response.status}`);
-            }
-
-            const resultText = data.text || "No response text received.";
-
-            if (groceryOutput) {
-                groceryOutput.innerHTML = resultText
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/^\s*[-*]\s+(.*$)/gim, '• $1')
-                    .replace(/\n/g, '<br>');
-            }
-
+            renderPlan(groceryOutput, plan);
             if (groceryStatusTag) groceryStatusTag.textContent = "Generated";
         } catch (err) {
             console.error("Error generating grocery list:", err);
             if (groceryOutput) {
-                groceryOutput.innerHTML = `<p style="color:red;">${err.message || "Failed to generate grocery list."}</p>`;
+                groceryOutput.innerHTML = '<p style="color:red;">' + escapeHtml(err.message || "Failed to generate grocery list.") + '</p>';
             }
             if (groceryStatusTag) groceryStatusTag.textContent = "Error";
         } finally {
@@ -929,41 +952,16 @@ if (workoutForm) {
         }
 
         try {
-            const response = await fetch(getApiUrl("/api/generate-workout"), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    fitnessLevel: userFitnessData.primaryGoal || "General Fitness",
-                    goals: description,
-                    description: description
-                })
+            const plan = await requestPlan("/api/generate-workout", {
+                primaryGoal: userFitnessData.primaryGoal || "General Fitness",
+                description: description
             });
 
-            const data = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                throw new Error(`Server returned status ${response.status}`);
-            }
-
-            const resultText = data.text || "No response text received.";
-
-            if (workoutOutput) {
-                const simpleText = (resultText || "")
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/^\s*[-*]\s+(.*$)/gim, '<li>$1</li>')
-                    .replace(/\n/g, '');
-
-                workoutOutput.innerHTML = '<ul class="feature-output-list">' + simpleText + '</ul>';
-            }
+            renderPlan(workoutOutput, plan);
         } catch (err) {
             console.error("Error generating workout:", err);
             if (workoutOutput) {
-                workoutOutput.innerHTML = `<p style="color:red;">${err.message || "Failed to generate workout."}</p>`;
+                workoutOutput.innerHTML = '<p style="color:red;">' + escapeHtml(err.message || "Failed to generate workout.") + '</p>';
             }
         } finally {
             if (generateWorkoutBtn) generateWorkoutBtn.disabled = false;
@@ -1100,12 +1098,14 @@ if (scanFoodBtn) {
 
             const data = await response.json();
             foodScanOutput.innerHTML = [
-                `<strong>Food:</strong> ${data.food}<br>`,
+                `<strong>Food:</strong> ${escapeHtml(data.food)}<br>`,
+                `<p class="plan-why"><span>Why:</span> ${escapeHtml(data.why && data.why.food)}</p>`,
                 `<strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%<br>`,
                 `<strong>Calories:</strong> ${data.nutrition.calories} kcal<br>`,
                 `<strong>Protein:</strong> ${data.nutrition.protein}g<br>`,
                 `<strong>Carbs:</strong> ${data.nutrition.carbs}g<br>`,
-                `<strong>Fat:</strong> ${data.nutrition.fat}g`
+                `<strong>Fat:</strong> ${data.nutrition.fat}g`,
+                `<p class="plan-why"><span>Why these numbers:</span> ${escapeHtml(data.why && data.why.nutrition)}</p>`
             ].join("");
 
             lastScannedMeal = data;
@@ -1113,7 +1113,7 @@ if (scanFoodBtn) {
 
         } catch (err) {
             console.error("Food scan error:", err);
-            foodScanOutput.innerHTML = `<p style='color:red;'>${err.message || "Failed to scan food image."}</p>`;
+            foodScanOutput.innerHTML = "<p style='color:red;'>" + escapeHtml(err.message || "Failed to scan food image.") + "</p>";
         } finally {
             scanFoodBtn.disabled = false;
         }

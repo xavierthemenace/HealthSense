@@ -777,6 +777,50 @@ nav.site-nav.nav-visible {
   box-shadow: 0 8px 24px rgba(31, 46, 43, 0.1);
 }
 
+.plan-summary {
+  margin: 0 0 12px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+
+.plan-section-title {
+  margin: 14px 0 6px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--accent-sage);
+}
+
+.plan-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.plan-item {
+  font-family: var(--font-sans);
+  padding-left: 12px;
+  border-left: 3px solid var(--border-color);
+}
+
+.plan-detail {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.plan-why {
+  margin: 4px 0 0;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.plan-why span {
+  font-weight: 700;
+  color: var(--accent-sage);
+}
+
 .cta-section {
   position: relative;
   min-height: calc(100vh - 96px);
